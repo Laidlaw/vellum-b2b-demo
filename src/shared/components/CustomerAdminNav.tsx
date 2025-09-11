@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Button, InlineStack, Text, Box } from '@shopify/polaris';
+import { Button } from '@shopify/polaris';
 import { NotificationIcon, ExternalSmallIcon } from '@shopify/polaris-icons';
 import UserMenu from './UserMenu';
 
@@ -13,70 +13,91 @@ const navigationItems = [
 export default function CustomerAdminNav() {
   const location = useLocation();
 
+  const navStyle: React.CSSProperties = {
+    backgroundColor: '#f9fafb',
+    borderBottom: '1px solid #e1e5e9',
+    padding: '0 24px',
+    height: '64px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    position: 'sticky',
+    top: 0,
+    zIndex: 100
+  };
+
+  const leftSectionStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '32px'
+  };
+
+  const logoStyle: React.CSSProperties = {
+    fontSize: '20px',
+    fontWeight: '600',
+    color: '#202223',
+    textDecoration: 'none'
+  };
+
+  const navLinksStyle: React.CSSProperties = {
+    display: 'flex',
+    gap: '24px'
+  };
+
+  const rightSectionStyle: React.CSSProperties = {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px'
+  };
+
+  const getLinkStyle = (isActive: boolean): React.CSSProperties => ({
+    color: isActive ? '#202223' : '#6d7175',
+    textDecoration: 'none',
+    fontSize: '14px',
+    fontWeight: isActive ? '500' : '400',
+    padding: '8px 0',
+    borderBottom: isActive ? '2px solid #008060' : '2px solid transparent',
+    transition: 'all 0.2s ease'
+  });
+
   return (
-    <Box 
-      padding="400" 
-      borderBlockEndWidth="0125" 
-      borderColor="border-secondary"
-      background="bg-surface"
-    >
-      <InlineStack align="space-between" blockAlign="center">
-        <InlineStack gap="800" blockAlign="center">
-          <Link 
-            to="/customer-admin" 
-            style={{ 
-              textDecoration: 'none',
-              color: 'var(--p-color-text)'
-            }}
-          >
-            <Text as="h1" variant="headingLg" fontWeight="bold">
-              Abstract
-            </Text>
-          </Link>
-          
-          <InlineStack gap="600">
-            {navigationItems.map((item) => {
-              const isActive = location.pathname.startsWith(item.path);
-              return (
-                <Link
-                  key={item.path}
-                  to={item.path}
-                  style={{
-                    textDecoration: 'none',
-                    padding: '0.5rem 0',
-                    borderBottom: isActive ? '2px solid var(--p-color-border-interactive)' : '2px solid transparent',
-                    color: isActive ? 'var(--p-color-text)' : 'var(--p-color-text-secondary)'
-                  }}
-                >
-                  <Text 
-                    as="span" 
-                    variant="bodyMd" 
-                    fontWeight={isActive ? 'semibold' : 'regular'}
-                  >
-                    {item.label}
-                  </Text>
-                </Link>
-              );
-            })}
-          </InlineStack>
-        </InlineStack>
+    <nav style={navStyle}>
+      <div style={leftSectionStyle}>
+        <Link to="/customer-admin" style={logoStyle}>
+          Abstract
+        </Link>
         
-        <InlineStack gap="200" align="center">
+        <div style={navLinksStyle}>
+          {navigationItems.map((item) => {
+            const isActive = location.pathname.startsWith(item.path);
+            return (
+              <Link
+                key={item.path}
+                to={item.path}
+                style={getLinkStyle(isActive)}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
+      
+      <div style={rightSectionStyle}>
+        <Button
+          icon={NotificationIcon}
+          variant="tertiary"
+          accessibilityLabel="Notifications"
+        />
+        <Link to="/storefront" style={{ textDecoration: 'none' }}>
           <Button
-            icon={NotificationIcon}
-            variant="tertiary"
-            accessibilityLabel="Notifications"
-          />
-          <Link to="/storefront" style={{ textDecoration: 'none' }}>
-            <Button
-              icon={ExternalSmallIcon}
-            >
-              Go to store
-            </Button>
-          </Link>
-          <UserMenu />
-        </InlineStack>
-      </InlineStack>
-    </Box>
+            icon={ExternalSmallIcon}
+          >
+            Go to store
+          </Button>
+        </Link>
+        <UserMenu />
+      </div>
+    </nav>
   );
 }

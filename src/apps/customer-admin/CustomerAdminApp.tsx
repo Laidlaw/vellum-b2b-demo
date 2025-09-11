@@ -88,7 +88,7 @@ function InvoicesPage() {
 
 export default function CustomerAdminApp() {
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <>
       <CustomerAdminNav />
       <Routes>
         <Route index element={<CustomerAdminHome />} />
@@ -97,6 +97,6 @@ export default function CustomerAdminApp() {
         <Route path="company" element={<CompanyPage />} />
         <Route path="invoices" element={<InvoicesPage />} />
       </Routes>
-    </div>
+    </>
   );
 }
