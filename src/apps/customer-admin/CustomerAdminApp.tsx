@@ -17,12 +17,18 @@ import {
   OrderIcon,
   ProductIcon,
   PersonIcon,
+  PaymentIcon,
   SettingsIcon,
   NotificationIcon
 } from '@shopify/polaris-icons';
 import { Link } from 'react-router-dom';
 import QuotesTable from './components/QuotesTable';
 import OrdersTable from './components/OrdersTable';
+import UsersPage from './pages/UsersPage';
+import CompanyPage from './pages/CompanyPage';
+import InvoicesPage from './pages/InvoicesPage';
+import DashboardPage from './pages/DashboardPage';
+
 
 function CustomerAdminHome() {
   return (
@@ -49,7 +55,6 @@ function CustomerAdminHome() {
             </InlineStack>
           </BlockStack>
         </Card>
-        
         <Card>
           <BlockStack gap="200">
             <Text as="h3" variant="headingMd">Quick Actions</Text>
@@ -76,26 +81,6 @@ function QuotesPage() {
   );
 }
 
-function UsersPage() {
-  return (
-    <Page title="Users" subtitle="Manage company users and their permissions">
-      <Card>
-        <Text as="p">User management interface will be implemented here</Text>
-      </Card>
-    </Page>
-  );
-}
-
-function CompanyPage() {
-  return (
-    <Page title="Company Information" subtitle="Manage company details, addresses, and settings">
-      <Card>
-        <Text as="p">Company info and addresses will be implemented here</Text>
-      </Card>
-    </Page>
-  );
-}
-
 function OrdersPage() {
   return (
     <Page title="Orders" subtitle="Track and manage your company's orders">
@@ -104,19 +89,6 @@ function OrdersPage() {
   );
 }
 
-function InvoicesPage() {
-  return (
-    <Page title="Invoices" subtitle="View and manage company invoices and billing">
-      <Layout>
-        <Layout.Section>
-          <Card>
-            <Text as="p">Invoice management interface will be implemented here</Text>
-          </Card>
-        </Layout.Section>
-      </Layout>
-    </Page>
-  );
-}
 
 export default function CustomerAdminApp() {
   const [mobileNavigationActive, setMobileNavigationActive] = useState(false);
@@ -163,6 +135,7 @@ export default function CustomerAdminApp() {
           },
           {
             label: 'Invoices',
+            icon: PaymentIcon,
             onClick: () => navigate('/customer-admin/invoices'),
             selected: location.pathname.startsWith('/customer-admin/invoices'),
           },
@@ -231,6 +204,7 @@ export default function CustomerAdminApp() {
         <Route path="users" element={<UsersPage />} />
         <Route path="company" element={<CompanyPage />} />
         <Route path="invoices" element={<InvoicesPage />} />
+        <Route path="stats" element={<DashboardPage />} />
       </Routes>
     </Frame>
   );

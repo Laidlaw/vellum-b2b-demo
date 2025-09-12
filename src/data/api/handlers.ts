@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { DEMO_DATA, getProductsByCategory, getQuotesByCompany, findProductById, findQuoteById, getOrdersByCompany, findOrderById } from '../mock/seed';
+import { DEMO_DATA, getProductsByCategory, getQuotesByCompany, findProductById, findQuoteById, getOrdersByCompany, findOrderById, getUsersByCompany, findUserById } from '../mock/seed';
 import type { ApiResponse, PaginatedResponse } from '../../shared/types';
 
 // MSW API handlers for the demo app
@@ -239,6 +239,119 @@ export const handlers = [
     
     const response: ApiResponse<typeof order> = {
       data: order,
+      success: true
+    };
+    
+    return HttpResponse.json(response);
+  }),
+
+  // Users endpoints
+  http.get('/api/users', ({ request }) => {
+    const url = new URL(request.url);
+    const companyId = url.searchParams.get('companyId');
+    const status = url.searchParams.get('status');
+    const department = url.searchParams.get('department');
+    const search = url.searchParams.get('search');
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '10');
+    
+    let users = DEMO_DATA.users;
+    
+    if (companyId) {
+      users = getUsersByCompany(companyId);
+    }
+    
+    if (status) {
+      const statusArray = status.split(',');
+      users = users.filter(u => statusArray.includes(u.status));
+    }
+    
+    if (department && department !== 'all') {
+      users = users.filter(u => u.department.toLowerCase() === department.toLowerCase());
+    }
+    
+    if (search) {
+      const searchLower = search.toLowerCase();
+      users = users.filter(u => 
+        u.firstName.toLowerCase().includes(searchLower) ||
+        u.lastName.toLowerCase().includes(searchLower) ||
+        u.email.toLowerCase().includes(searchLower) ||
+        u.jobTitle?.toLowerCase().includes(searchLower)
+      );
+    }
+    
+    // Sort by dateCreated (newest first)
+    users = users.sort((a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime());
+    
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const paginatedUsers = users.slice(start, end);
+    
+    const response: PaginatedResponse<typeof paginatedUsers[0]> = {
+      data: paginatedUsers,
+      total: users.length,
+      page,
+      limit,
+      hasNext: end < users.length,
+      hasPrevious: page > 1
+    };
+    
+    return HttpResponse.json(response);
+  }),
+  
+  http.get('/api/users/:id', ({ params }) => {
+    const user = findUserById(params.id as string);
+    if (!user) {
+      return HttpResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
+    const response: ApiResponse<typeof user> = {
+      data: user,
+      success: true
+    };
+    
+    return HttpResponse.json(response);
+  }),
+  
+  http.put('/api/users/:id/status', async ({ params, request }) => {
+    const user = findUserById(params.id as string);
+    if (!user) {
+      return HttpResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
+    const body = await request.json() as { status: 'active' | 'inactive' | 'pending' };
+    
+    // Simulate status update
+    user.status = body.status;
+    
+    const response: ApiResponse<typeof user> = {
+      data: user,
+      success: true,
+      message: `User ${body.status === 'active' ? 'activated' : body.status === 'inactive' ? 'deactivated' : 'set to pending'} successfully`
+    };
+    
+    return HttpResponse.json(response);
+  }),
+  
+  http.delete('/api/users/:id', ({ params }) => {
+    const user = findUserById(params.id as string);
+    if (!user) {
+      return HttpResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      );
+    }
+    
+    // In a real app, this would delete the user from the database
+    // For demo purposes, we'll just return success
+    const response: ApiResponse<{ message: string }> = {
+      data: { message: 'User removed successfully' },
       success: true
     };
     

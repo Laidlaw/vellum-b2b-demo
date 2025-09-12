@@ -13,7 +13,7 @@ import {
 } from '@shopify/polaris';
 import { Link } from 'react-router-dom';
 import {
-  QuoteIcon,
+  NoteIcon,
   OrderIcon,
   PaymentIcon,
   TeamIcon,
@@ -115,7 +115,7 @@ interface ActivityData {
 function ActivityItem({ activity }: { activity: ActivityData }) {
   const getActivityIcon = () => {
     switch (activity.type) {
-      case 'quote': return QuoteIcon;
+      case 'quote': return NoteIcon;
       case 'order': return OrderIcon;
       case 'invoice': return PaymentIcon;
       case 'team': return TeamIcon;

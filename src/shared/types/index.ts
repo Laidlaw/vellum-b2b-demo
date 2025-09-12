@@ -108,10 +108,14 @@ export interface User {
   firstName: string;
   lastName: string;
   email: string;
-  role: 'shopper' | 'supervisor' | 'admin' | 'merchant';
+  role: 'admin' | 'manager' | 'purchaser' | 'sub-contractor';
+  department: string;
+  location?: string;
   companyId: string;
-  isActive: boolean;
+  status: 'active' | 'inactive' | 'pending';
   permissions: string[];
+  phone?: string;
+  jobTitle?: string;
   dateCreated: Date;
   lastLogin?: Date;
 }

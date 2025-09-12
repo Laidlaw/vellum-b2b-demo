@@ -4,9 +4,10 @@ import {
   generateQuote,
   generateSalesperson,
   generateProductCategory,
-  generateOrder
+  generateOrder,
+  generateUser
 } from './generators';
-import type { Product, Company, Quote, Salesperson, ProductCategory, Order } from '../../shared/types';
+import type { Product, Company, Quote, Salesperson, ProductCategory, Order, User } from '../../shared/types';
 
 // Generate seed data for the demo
 export function generateSeedData() {
@@ -23,8 +24,27 @@ export function generateSeedData() {
     products.push(...categoryProducts);
   });
   
-  // Generate companies
-  const companies: Company[] = Array.from({ length: 10 }, generateCompany);
+  // Generate companies - first one is the demo company
+  const companies: Company[] = [
+    generateCompany('acme-industrial-123'), // Demo company for the app
+    ...Array.from({ length: 9 }, generateCompany) // Additional random companies
+  ];
+  
+  // Generate additional users for the companies (beyond the ones created with companies)
+  const users: User[] = [];
+  companies.forEach(company => {
+    // Companies already have users, but let's add the company users to our main users array
+    users.push(...company.users);
+    
+    // Add a few more users for variety
+    const extraUsers = Array.from({ 
+      length: Math.floor(Math.random() * 3) + 1 
+    }, () => {
+      const roles: User['role'][] = ['admin', 'manager', 'purchaser', 'sub-contractor'];
+      return generateUser(company.id, roles[Math.floor(Math.random() * roles.length)]);
+    });
+    users.push(...extraUsers);
+  });
   
   // Generate quotes for companies
   const quotes: Quote[] = [];
@@ -48,6 +68,7 @@ export function generateSeedData() {
     categories,
     products,
     companies,
+    users,
     quotes,
     orders,
     salespeople
@@ -92,4 +113,20 @@ export function getOrdersByStatus(status: string): Order[] {
 
 export function findOrderById(orderId: string): Order | undefined {
   return DEMO_DATA.orders.find(o => o.id === orderId);
+}
+
+export function getUsersByCompany(companyId: string): User[] {
+  return DEMO_DATA.users.filter(u => u.companyId === companyId);
+}
+
+export function getUsersByStatus(status: User['status']): User[] {
+  return DEMO_DATA.users.filter(u => u.status === status);
+}
+
+export function getUsersByDepartment(department: string): User[] {
+  return DEMO_DATA.users.filter(u => u.department === department);
+}
+
+export function findUserById(userId: string): User | undefined {
+  return DEMO_DATA.users.find(u => u.id === userId);
 }

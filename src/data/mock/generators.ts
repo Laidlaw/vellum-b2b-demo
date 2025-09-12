@@ -94,7 +94,7 @@ function generateProductImage(productName: string, searchTerms: string, productI
       default:
         return imageGenerators[IMAGE_CONFIG.fallbackProvider](productName);
     }
-  } catch (error) {
+  } catch {
     // Fallback to placeholder if anything goes wrong
     return imageGenerators.placeholder(productName);
   }
@@ -197,28 +197,112 @@ export function generateSalesperson(): Salesperson {
   };
 }
 
-export function generateUser(companyId: string, role: User['role'] = 'shopper'): User {
+// B2B departments and job titles for realistic user generation
+const B2B_DEPARTMENTS = [
+  'Operations',
+  'Procurement', 
+  'Finance',
+  'Sales',
+  'Engineering',
+  'Quality Assurance',
+  'Warehouse',
+  'Customer Service',
+  'IT',
+  'Human Resources'
+];
+
+const JOB_TITLES_BY_ROLE = {
+  admin: [
+    'Account Administrator',
+    'System Administrator', 
+    'Operations Manager',
+    'General Manager'
+  ],
+  manager: [
+    'Procurement Manager',
+    'Department Manager',
+    'Operations Supervisor',
+    'Finance Manager',
+    'Warehouse Manager'
+  ],
+  purchaser: [
+    'Procurement Specialist',
+    'Purchasing Agent', 
+    'Buyer',
+    'Supply Chain Coordinator'
+  ],
+  'sub-contractor': [
+    'External Consultant',
+    'Contract Worker',
+    'Temporary Staff',
+    'Freelance Specialist'
+  ]
+};
+
+const PERMISSIONS_BY_ROLE = {
+  admin: [
+    'full_access',
+    'manage_team',
+    'approve_orders',
+    'manage_quotes',
+    'view_reports',
+    'system_settings'
+  ],
+  manager: [
+    'approve_orders',
+    'manage_quotes',
+    'view_reports',
+    'manage_department',
+    'approve_quotes'
+  ],
+  purchaser: [
+    'create_orders',
+    'view_quotes',
+    'request_quotes',
+    'view_products'
+  ],
+  'sub-contractor': [
+    'view_orders',
+    'view_products',
+    'limited_access'
+  ]
+};
+
+export function generateUser(companyId: string, role: User['role'] = 'purchaser'): User {
+  const firstName = faker.person.firstName();
+  const lastName = faker.person.lastName();
+  const department = faker.helpers.arrayElement(B2B_DEPARTMENTS);
+  const jobTitle = faker.helpers.arrayElement(JOB_TITLES_BY_ROLE[role]);
+  
   return {
     id: faker.string.uuid(),
-    firstName: faker.person.firstName(),
-    lastName: faker.person.lastName(),
-    email: faker.internet.email(),
+    firstName,
+    lastName,
+    email: faker.internet.email({ firstName, lastName }),
     role,
+    department,
+    location: faker.datatype.boolean(0.3) ? faker.location.city() : undefined,
     companyId,
-    isActive: faker.datatype.boolean(0.9),
-    permissions: role === 'supervisor' ? ['approve_quotes', 'manage_users'] : ['create_quotes'],
+    status: faker.helpers.weightedArrayElement([
+      { weight: 0.8, value: 'active' as const },
+      { weight: 0.15, value: 'inactive' as const },
+      { weight: 0.05, value: 'pending' as const }
+    ]),
+    permissions: PERMISSIONS_BY_ROLE[role],
+    phone: faker.datatype.boolean(0.7) ? faker.phone.number() : undefined,
+    jobTitle,
     dateCreated: faker.date.past({ years: 2 }),
     lastLogin: faker.date.recent({ days: 30 })
   };
 }
 
-export function generateCompany(): Company {
-  const companyId = faker.string.uuid();
+export function generateCompany(predefinedId?: string): Company {
+  const companyId = predefinedId || faker.string.uuid();
   const salespersonId = faker.string.uuid();
   
   return {
     id: companyId,
-    name: faker.company.name(),
+    name: predefinedId ? 'Acme Industrial Solutions' : faker.company.name(),
     logoUrl: faker.image.url({ width: 200, height: 100 }),
     industry: faker.helpers.arrayElement([
       'Manufacturing',
