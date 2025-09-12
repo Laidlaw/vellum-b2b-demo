@@ -3,9 +3,10 @@ import {
   generateCompany,
   generateQuote,
   generateSalesperson,
-  generateProductCategory
+  generateProductCategory,
+  generateOrder
 } from './generators';
-import type { Product, Company, Quote, Salesperson, ProductCategory } from '../../shared/types';
+import type { Product, Company, Quote, Salesperson, ProductCategory, Order } from '../../shared/types';
 
 // Generate seed data for the demo
 export function generateSeedData() {
@@ -34,11 +35,21 @@ export function generateSeedData() {
     quotes.push(...companyQuotes);
   });
   
+  // Generate orders for companies
+  const orders: Order[] = [];
+  companies.forEach(company => {
+    const companyOrders = Array.from({ 
+      length: Math.floor(Math.random() * 6) + 3 
+    }, () => generateOrder(products, company.id, company.users[0]?.id || 'default-user'));
+    orders.push(...companyOrders);
+  });
+  
   return {
     categories,
     products,
     companies,
     quotes,
+    orders,
     salespeople
   };
 }
@@ -69,4 +80,16 @@ export function findCompanyById(companyId: string): Company | undefined {
 
 export function findQuoteById(quoteId: string): Quote | undefined {
   return DEMO_DATA.quotes.find(q => q.id === quoteId);
+}
+
+export function getOrdersByCompany(companyId: string): Order[] {
+  return DEMO_DATA.orders.filter(o => o.companyId === companyId);
+}
+
+export function getOrdersByStatus(status: string): Order[] {
+  return DEMO_DATA.orders.filter(o => o.status === status);
+}
+
+export function findOrderById(orderId: string): Order | undefined {
+  return DEMO_DATA.orders.find(o => o.id === orderId);
 }

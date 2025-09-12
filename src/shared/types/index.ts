@@ -179,3 +179,29 @@ export interface QuoteFilters {
   salespersonId?: string;
   companyId?: string;
 }
+
+// Order types
+export interface OrderItem {
+  productId: string;
+  product: Product;
+  quantity: number;
+  unitPrice: number;
+  totalPrice: number;
+}
+
+export interface Order {
+  id: string;
+  orderNumber: string;
+  status: 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+  dateCreated: Date;
+  dateConfirmed?: Date;
+  items: OrderItem[];
+  totalAmount: number;
+  shippingAddress: Address;
+  billingAddress: Address;
+  paymentStatus: 'paid' | 'partial' | 'due' | 'overdue';
+  paymentDueDate?: Date;
+  companyId: string;
+  userId: string;
+  notes?: string;
+}

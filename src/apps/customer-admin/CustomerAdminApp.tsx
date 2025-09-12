@@ -3,6 +3,7 @@ import { Page, Card, BlockStack, Text, Button, InlineStack } from '@shopify/pola
 import { Link } from 'react-router-dom';
 import CustomerAdminNav from '../../shared/components/CustomerAdminNav';
 import QuotesTable from './components/QuotesTable';
+import OrdersTable from './components/OrdersTable';
 
 function CustomerAdminHome() {
   return (
@@ -76,6 +77,14 @@ function CompanyPage() {
   );
 }
 
+function OrdersPage() {
+  return (
+    <Page title="Orders" subtitle="Track and manage your company's orders">
+      <OrdersTable />
+    </Page>
+  );
+}
+
 function InvoicesPage() {
   return (
     <Page title="Invoices" subtitle="View and manage company invoices and billing">
@@ -93,6 +102,7 @@ export default function CustomerAdminApp() {
       <Routes>
         <Route index element={<CustomerAdminHome />} />
         <Route path="quotes/*" element={<QuotesPage />} />
+        <Route path="orders/*" element={<OrdersPage />} />
         <Route path="users" element={<UsersPage />} />
         <Route path="company" element={<CompanyPage />} />
         <Route path="invoices" element={<InvoicesPage />} />

@@ -1,5 +1,5 @@
 import { http, HttpResponse } from 'msw';
-import { DEMO_DATA, getProductsByCategory, getQuotesByCompany, findProductById, findQuoteById } from '../mock/seed';
+import { DEMO_DATA, getProductsByCategory, getQuotesByCompany, findProductById, findQuoteById, getOrdersByCompany, findOrderById } from '../mock/seed';
 import type { ApiResponse, PaginatedResponse } from '../../shared/types';
 
 // MSW API handlers for the demo app
@@ -184,6 +184,61 @@ export const handlers = [
     
     const response: ApiResponse<{ message: string }> = {
       data: { message: 'Product added to cart' },
+      success: true
+    };
+    
+    return HttpResponse.json(response);
+  }),
+
+  // Orders endpoints
+  http.get('/api/orders', ({ request }) => {
+    const url = new URL(request.url);
+    const companyId = url.searchParams.get('companyId');
+    const status = url.searchParams.get('status');
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = parseInt(url.searchParams.get('limit') || '10');
+    
+    let orders = DEMO_DATA.orders;
+    
+    if (companyId) {
+      orders = getOrdersByCompany(companyId);
+    }
+    
+    if (status) {
+      const statusArray = status.split(',');
+      orders = orders.filter(o => statusArray.includes(o.status));
+    }
+    
+    // Sort by date created (newest first)
+    orders = orders.sort((a, b) => new Date(b.dateCreated).getTime() - new Date(a.dateCreated).getTime());
+    
+    const start = (page - 1) * limit;
+    const end = start + limit;
+    const paginatedOrders = orders.slice(start, end);
+    
+    const response: PaginatedResponse<typeof paginatedOrders[0]> = {
+      data: paginatedOrders,
+      total: orders.length,
+      page,
+      limit,
+      hasNext: end < orders.length,
+      hasPrevious: page > 1
+    };
+    
+    return HttpResponse.json(response);
+  }),
+  
+  http.get('/api/orders/:id', ({ params }) => {
+    const order = findOrderById(params.id as string);
+    if (!order) {
+      return HttpResponse.json(
+        { success: false, error: 'Order not found' },
+        { status: 404 }
+      );
+    }
+    
+    const response: ApiResponse<typeof order> = {
+      data: order,
       success: true
     };
     

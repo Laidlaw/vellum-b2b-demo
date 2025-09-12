@@ -11,7 +11,9 @@ import type {
   Dimensions,
   QuoteItem,
   CartItem,
-  Address
+  Address,
+  Order,
+  OrderItem
 } from '../../shared/types';
 
 // Mock data generators using faker
@@ -235,5 +237,54 @@ export function generateCartItem(product: Product): CartItem {
     product,
     quantity: faker.number.int({ min: 1, max: 20 }),
     discount: faker.datatype.boolean(0.2) ? faker.number.float({ min: 0.05, max: 0.15, fractionDigits: 2 }) : undefined
+  };
+}
+
+export function generateOrderItem(product: Product): OrderItem {
+  const quantity = faker.number.int({ min: 1, max: 10 });
+  const unitPrice = faker.number.float({ min: product.basePrice * 0.8, max: product.basePrice * 1.2, fractionDigits: 2 });
+  
+  return {
+    productId: product.id,
+    product,
+    quantity,
+    unitPrice,
+    totalPrice: quantity * unitPrice
+  };
+}
+
+export function generateOrder(products: Product[], companyId: string, userId: string): Order {
+  const dateCreated = faker.date.past({ years: 1 });
+  const dateConfirmed = faker.datatype.boolean(0.8) ? faker.date.between({ from: dateCreated, to: new Date() }) : undefined;
+  
+  // Generate 1-5 order items
+  const itemCount = faker.number.int({ min: 1, max: 5 });
+  const selectedProducts = faker.helpers.arrayElements(products, itemCount);
+  const items = selectedProducts.map(product => generateOrderItem(product));
+  const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
+  
+  const shippingAddress = generateAddress('shipping');
+  const billingAddress = generateAddress('billing');
+  
+  const status = faker.helpers.arrayElement(['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] as const);
+  const paymentStatus = faker.helpers.arrayElement(['paid', 'partial', 'due', 'overdue'] as const);
+  
+  return {
+    id: faker.string.uuid(),
+    orderNumber: `#${faker.number.int({ min: 1000, max: 9999 })}`,
+    status,
+    dateCreated,
+    dateConfirmed,
+    items,
+    totalAmount,
+    shippingAddress,
+    billingAddress,
+    paymentStatus,
+    paymentDueDate: paymentStatus === 'due' || paymentStatus === 'overdue' 
+      ? faker.date.future({ days: 30 }) 
+      : undefined,
+    companyId,
+    userId,
+    notes: faker.datatype.boolean(0.3) ? faker.lorem.sentence() : undefined
   };
 }

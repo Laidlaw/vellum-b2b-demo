@@ -6,6 +6,7 @@ import UserMenu from './UserMenu';
 const navigationItems = [
   { label: 'Users', path: '/customer-admin/users' },
   { label: 'Company Info', path: '/customer-admin/company' },
+  { label: 'Orders', path: '/customer-admin/orders' },
   { label: 'Quotes', path: '/customer-admin/quotes' },
   { label: 'Invoices', path: '/customer-admin/invoices' }
 ];
