@@ -39,13 +39,15 @@ function App() {
         }}
       >
         <Router>
-          <div style={{ minHeight: '100vh', paddingBottom: '60px', position: 'relative' }}>
-            <Routes>
-              <Route path="/storefront/*" element={<StorefrontApp />} />
-              <Route path="/customer-admin/*" element={<CustomerAdminApp />} />
-              <Route path="/merchant-portal/*" element={<MerchantPortalApp />} />
-              <Route path="/" element={<Navigate to="/storefront" replace />} />
-            </Routes>
+          <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1 }}>
+              <Routes>
+                <Route path="/storefront/*" element={<StorefrontApp />} />
+                <Route path="/customer-admin/*" element={<CustomerAdminApp />} />
+                <Route path="/merchant-portal/*" element={<MerchantPortalApp />} />
+                <Route path="/" element={<Navigate to="/storefront" replace />} />
+              </Routes>
+            </div>
             <AppFooter />
           </div>
         </Router>

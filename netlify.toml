@@ -1,0 +1,26 @@
+# Netlify deployment configuration for vellum-pay.netlify.app
+[build]
+  publish = "dist"
+  command = "npm run build:netlify"
+
+[build.environment]
+  NODE_VERSION = "18"
+
+# SPA redirect for React Router
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Headers for service worker
+[[headers]]
+  for = "/mockServiceWorker.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+    Service-Worker-Allowed = "/"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"

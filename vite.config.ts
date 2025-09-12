@@ -3,10 +3,18 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig(({ command, mode }) => {
-  // Use GitHub Pages base path only for production builds
-  const base = command === 'build' && mode === 'production' 
-    ? '/vellum-b2b-demo/' 
-    : '/'
+  // Dynamic base path configuration
+  let base = '/'
+  
+  if (command === 'build') {
+    if (mode === 'production') {
+      // GitHub Pages deployment
+      base = '/vellum-b2b-demo/'
+    } else if (mode === 'netlify') {
+      // Netlify deployment uses root path
+      base = '/'
+    }
+  }
 
   return {
     plugins: [react()],

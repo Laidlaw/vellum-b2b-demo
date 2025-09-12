@@ -2,6 +2,11 @@
 
 A comprehensive React-based B2B demo application built with Shopify Polaris components, featuring three distinct user interfaces for different personas in the B2B workflow.
 
+## 🔗 Live Demo
+
+**Production**: [https://vellum-pay.netlify.app](https://vellum-pay.netlify.app)  
+*Alternative*: [https://laidlaw.github.io/vellum-b2b-demo/](https://laidlaw.github.io/vellum-b2b-demo/) (GitHub Pages)
+
 ## 🎯 Overview
 
 This application demonstrates a complete B2B e-commerce solution with three main applications:
@@ -24,12 +29,22 @@ npm run dev
 
 ## 📋 Available Scripts
 
+### Development
 - `npm run dev` - Start development server with hot reload
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
+- `npm run build` - Build for GitHub Pages production
+- `npm run build:netlify` - Build for Netlify deployment
+- `npm run build:dev` - Development build for testing
+- `npm run preview` - Preview production build locally
+- `npm run preview:local` - Preview with local paths
+
+### Quality & Testing
 - `npm run lint` - Run ESLint
 - `npm run typecheck` - Run TypeScript checks
 - `npm test` - Run tests (placeholder)
+
+### Deployment
+- `npm run deploy` - Deploy to GitHub Pages
+- `npm run deploy:netlify` - Build for Netlify (manual)
 
 ## 🏗️ Architecture
 
@@ -121,6 +136,67 @@ The application uses MSW for realistic API simulation:
 - [ ] Create merchant portal features
 - [ ] Implement state management
 - [ ] Add form validation and error handling
+
+## 🚀 Deployment
+
+### Netlify (Recommended)
+
+Netlify provides the best support for service workers and MSW mock data.
+
+#### Automatic Deployment (GitHub Integration)
+1. **Fork/Clone** this repository
+2. **Sign in** to [netlify.com](https://netlify.com) with GitHub
+3. **Create new site** → "Import an existing project" → Choose GitHub
+4. **Select** your `vellum-b2b-demo` repository
+5. **Configure build settings** (auto-detected from `netlify.toml`):
+   - Build command: `npm run build:netlify`
+   - Publish directory: `dist`
+6. **Deploy site** - Netlify will build and deploy automatically
+7. **Optional**: Change site name to something like `vellum-b2b-demo`
+
+#### Manual Build & Deploy
+```bash
+# Build for Netlify
+npm run build:netlify
+
+# Deploy manually using Netlify CLI (requires setup)
+npx netlify-cli deploy --prod --dir=dist
+```
+
+### GitHub Pages (Alternative)
+
+GitHub Pages has service worker limitations but works for basic functionality.
+
+```bash
+# Build and deploy to GitHub Pages
+npm run deploy
+```
+
+### Environment Variables
+
+For sensitive data or configuration:
+
+```bash
+# Copy example environment file
+cp .env.example .env
+
+# Edit .env with your values (never commit this file)
+```
+
+Current environment variables (all optional):
+- `VITE_APP_NAME` - Application name
+- `VITE_APP_VERSION` - Version display
+- `VITE_MSW_ENABLED` - Enable/disable mock service worker
+- `VITE_MOCK_DELAY_MS` - API response delay simulation
+
+### Deployment Checklist
+
+Before deploying:
+- [ ] Run `npm run lint` - Fix any linting errors
+- [ ] Run `npm run typecheck` - Ensure no TypeScript errors
+- [ ] Test locally with `npm run preview:local`
+- [ ] Verify mock data loads correctly
+- [ ] Check all three app routes work (`/storefront`, `/customer-admin`, `/merchant-portal`)
 
 ## 📝 Contributing
 

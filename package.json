@@ -3,17 +3,20 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "homepage": "https://vellum-pay.netlify.app",
   "scripts": {
     "dev": "vite",
     "build": "vite build --mode production",
     "build:dev": "vite build --mode development",
+    "build:netlify": "vite build --mode netlify",
     "build-with-types": "tsc -b && vite build --mode production",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "preview:local": "vite build --mode development && vite preview --base /",
     "test": "echo \"Tests will be added later\"",
-    "deploy": "npm run build && gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist",
+    "deploy:netlify": "npm run build:netlify"
   },
   "dependencies": {
     "@faker-js/faker": "^10.0.0",
