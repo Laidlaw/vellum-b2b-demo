@@ -18,13 +18,22 @@ export default function CustomerAdminNav() {
     backgroundColor: '#f9fafb',
     borderBottom: '1px solid #e1e5e9',
     padding: '0 24px',
-    height: '64px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    //height: '64px',
+    //display: 'flex',
+    //alignItems: 'center',
+    //justifyContent: 'space-between',
     position: 'sticky',
     top: 0,
     zIndex: 100
+  };
+
+  const header__container: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    width: '100%',
+    maxWidth: '1200px',
+    margin: '0 auto'
   };
 
   const leftSectionStyle: React.CSSProperties = {
@@ -62,43 +71,45 @@ export default function CustomerAdminNav() {
   });
 
   return (
-    <nav style={navStyle}>
-      <div style={leftSectionStyle}>
-        <Link to="/customer-admin" style={logoStyle}>
-          Abstract
-        </Link>
+    <header style={navStyle}>
+      <div style={header__container}>
+        <div style={leftSectionStyle}>
+          <Link to="/customer-admin" style={logoStyle}>
+            Abstract
+          </Link>
+          
+          <div style={navLinksStyle}>
+            {navigationItems.map((item) => {
+              const isActive = location.pathname.startsWith(item.path);
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  style={getLinkStyle(isActive)}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </div>
+        </div>
         
-        <div style={navLinksStyle}>
-          {navigationItems.map((item) => {
-            const isActive = location.pathname.startsWith(item.path);
-            return (
-              <Link
-                key={item.path}
-                to={item.path}
-                style={getLinkStyle(isActive)}
-              >
-                {item.label}
-              </Link>
-            );
-          })}
+        <div style={rightSectionStyle}>
+          <Button
+            icon={NotificationIcon}
+            variant="tertiary"
+            accessibilityLabel="Notifications"
+          />
+          <Link to="/storefront" style={{ textDecoration: 'none' }}>
+            <Button
+              icon={ExternalSmallIcon}
+            >
+              Go to store
+            </Button>
+          </Link>
+          <UserMenu />
         </div>
       </div>
-      
-      <div style={rightSectionStyle}>
-        <Button
-          icon={NotificationIcon}
-          variant="tertiary"
-          accessibilityLabel="Notifications"
-        />
-        <Link to="/storefront" style={{ textDecoration: 'none' }}>
-          <Button
-            icon={ExternalSmallIcon}
-          >
-            Go to store
-          </Button>
-        </Link>
-        <UserMenu />
-      </div>
-    </nav>
+    </header>
   );
 }
