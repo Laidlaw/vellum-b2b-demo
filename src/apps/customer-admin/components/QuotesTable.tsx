@@ -275,44 +275,33 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
   };
 
   return (
-    <>
-      <BlockStack gap="400">
-        <BlockStack gap="200">
-          <Text as="h1" variant="headingLg">
-            Quotes
-          </Text>
-          <Text as="p" variant="bodyMd" tone="subdued">
-            Review and approve pending quotes from your team
-          </Text>
-        </BlockStack>
-        
-        <Card>
-          <ResourceList
-            resourceName={{ singular: 'quote', plural: 'quotes' }}
-            items={quotes}
-            renderItem={renderQuoteItem}
-            selectedItems={selectedItems}
-            onSelectionChange={handleSelectionChange}
-            selectable
-            bulkActions={bulkActions}
-            promotedBulkActions={promotedBulkActions}
-            filterControl={filterControl}
-            loading={isLoading}
-            emptyState={
-              <Box padding="800" textAlign="center">
-                <BlockStack gap="300">
-                  <Text as="p" variant="bodyMd" tone="subdued">
-                    No quotes found
-                  </Text>
-                  <Text as="p" variant="bodySm" tone="subdued">
-                    Try adjusting your filters or search terms.
-                  </Text>
-                </BlockStack>
-              </Box>
-            }
-          />
-        </Card>
-      </BlockStack>
+    <div>
+      <Card>
+        <ResourceList
+          resourceName={{ singular: 'quote', plural: 'quotes' }}
+          items={quotes}
+          renderItem={renderQuoteItem}
+          selectedItems={selectedItems}
+          onSelectionChange={handleSelectionChange}
+          selectable
+          bulkActions={bulkActions}
+          promotedBulkActions={promotedBulkActions}
+          filterControl={filterControl}
+          loading={isLoading}
+          emptyState={
+            <Box padding="800" textAlign="center">
+              <BlockStack gap="300">
+                <Text as="p" variant="bodyMd" tone="subdued">
+                  No quotes found
+                </Text>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Try adjusting your filters or search terms.
+                </Text>
+              </BlockStack>
+            </Box>
+          }
+        />
+      </Card>
 
       {selectedQuote && (
         <Modal
@@ -518,6 +507,6 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
           </Modal.Section>
         </Modal>
       )}
-    </>
+    </div>
   );
 }

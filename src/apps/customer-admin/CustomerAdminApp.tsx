@@ -1,7 +1,26 @@
-import { Routes, Route } from 'react-router-dom';
-import { Page, Card, BlockStack, Text, Button, InlineStack } from '@shopify/polaris';
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+import { 
+  Page, 
+  Card, 
+  BlockStack, 
+  Text, 
+  Button, 
+  InlineStack,
+  Layout,
+  Navigation,
+  TopBar,
+  Frame
+} from '@shopify/polaris';
+import { 
+  HomeIcon,
+  OrderIcon,
+  ProductIcon,
+  PersonIcon,
+  SettingsIcon,
+  NotificationIcon
+} from '@shopify/polaris-icons';
 import { Link } from 'react-router-dom';
-import CustomerAdminNav from '../../shared/components/CustomerAdminNav';
 import QuotesTable from './components/QuotesTable';
 import OrdersTable from './components/OrdersTable';
 
@@ -88,17 +107,123 @@ function OrdersPage() {
 function InvoicesPage() {
   return (
     <Page title="Invoices" subtitle="View and manage company invoices and billing">
-      <Card>
-        <Text as="p">Invoice management interface will be implemented here</Text>
-      </Card>
+      <Layout>
+        <Layout.Section>
+          <Card>
+            <Text as="p">Invoice management interface will be implemented here</Text>
+          </Card>
+        </Layout.Section>
+      </Layout>
     </Page>
   );
 }
 
 export default function CustomerAdminApp() {
+  const [mobileNavigationActive, setMobileNavigationActive] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const toggleMobileNavigationActive = () =>
+    setMobileNavigationActive((mobileNavigationActive) => !mobileNavigationActive);
+
+  const toggleUserMenuOpen = () => setUserMenuOpen((open) => !open);
+
+  const userMenuActions = [
+    {
+      items: [
+        { content: 'Profile settings', icon: SettingsIcon },
+        { content: 'Help center' },
+        { content: 'Sign out' }
+      ]
+    }
+  ];
+
+  const navigationMarkup = (
+    <Navigation location={location.pathname}>
+      <Navigation.Section
+        items={[
+          {
+            label: 'Dashboard',
+            icon: HomeIcon,
+            onClick: () => navigate('/customer-admin'),
+            selected: location.pathname === '/customer-admin',
+          },
+          {
+            label: 'Quotes',
+            icon: ProductIcon,
+            onClick: () => navigate('/customer-admin/quotes'),
+            selected: location.pathname.startsWith('/customer-admin/quotes'),
+          },
+          {
+            label: 'Orders', 
+            icon: OrderIcon,
+            onClick: () => navigate('/customer-admin/orders'),
+            selected: location.pathname.startsWith('/customer-admin/orders'),
+          },
+          {
+            label: 'Invoices',
+            onClick: () => navigate('/customer-admin/invoices'),
+            selected: location.pathname.startsWith('/customer-admin/invoices'),
+          },
+          {
+            label: 'Team',
+            icon: PersonIcon,
+            onClick: () => navigate('/customer-admin/users'),
+            selected: location.pathname.startsWith('/customer-admin/users'),
+          },
+          {
+            label: 'Company',
+            icon: SettingsIcon,
+            onClick: () => navigate('/customer-admin/company'),
+            selected: location.pathname.startsWith('/customer-admin/company'),
+          },
+        ]}
+      />
+    </Navigation>
+  );
+
+  const topBarMarkup = (
+    <TopBar
+      showNavigationToggle
+      userMenu={
+        <TopBar.UserMenu
+          actions={userMenuActions}
+          name="Sarah Chen"
+          detail="Acme Industrial Solutions"
+          initials="SC"
+          open={userMenuOpen}
+          onToggle={toggleUserMenuOpen}
+        />
+      }
+      secondaryMenu={
+        <TopBar.Menu
+          activatorContent={
+            <span>
+              <NotificationIcon />
+            </span>
+          }
+          open={false}
+          onOpen={() => {}}
+          onClose={() => {}}
+          actions={[
+            {
+              items: [{ content: 'View all notifications' }],
+            },
+          ]}
+        />
+      }
+      onNavigationToggle={toggleMobileNavigationActive}
+    />
+  );
+
   return (
-    <>
-      <CustomerAdminNav />
+    <Frame
+      topBar={topBarMarkup}
+      navigation={navigationMarkup}
+      showMobileNavigation={mobileNavigationActive}
+      onNavigationDismiss={toggleMobileNavigationActive}
+    >
       <Routes>
         <Route index element={<CustomerAdminHome />} />
         <Route path="quotes/*" element={<QuotesPage />} />
@@ -107,6 +232,6 @@ export default function CustomerAdminApp() {
         <Route path="company" element={<CompanyPage />} />
         <Route path="invoices" element={<InvoicesPage />} />
       </Routes>
-    </>
+    </Frame>
   );
 }
