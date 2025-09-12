@@ -32,3 +32,6 @@ dist-ssr
 
 # Netlify
 .netlify/
+
+# Claude logs
+vault/claude-log/netlify*
