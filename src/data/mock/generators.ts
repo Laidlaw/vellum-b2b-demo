@@ -51,7 +51,89 @@ export function generateVolumePrice(): VolumePrice {
   };
 }
 
-export function generateProduct(categoryId?: string): Product {
+// ============================================================================
+// PRODUCT GENERATOR CONFIGURATION
+// ============================================================================
+
+// Image provider configuration - easily switch between services
+type ImageProvider = 'unsplash' | 'picsum' | 'placeholder' | 'static';
+
+const IMAGE_CONFIG = {
+  provider: 'picsum' as ImageProvider, // Switch provider here
+  fallbackProvider: 'placeholder' as ImageProvider,
+  dimensions: { width: 400, height: 400 }
+};
+
+// Image URL generators for different services
+const imageGenerators = {
+  unsplash: (searchTerms: string) => 
+    `https://source.unsplash.com/${IMAGE_CONFIG.dimensions.width}x${IMAGE_CONFIG.dimensions.height}/?${searchTerms}`,
+  
+  picsum: (productId: string) => 
+    `https://picsum.photos/${IMAGE_CONFIG.dimensions.width}/${IMAGE_CONFIG.dimensions.height}?random=${productId}`,
+  
+  placeholder: (productName: string) => 
+    `https://via.placeholder.com/${IMAGE_CONFIG.dimensions.width}x${IMAGE_CONFIG.dimensions.height}/cccccc/666666?text=${encodeURIComponent(productName)}`,
+  
+  static: (category: string) => 
+    `/images/products/${category.toLowerCase().replace(/\s+/g, '-')}.jpg`
+};
+
+// Generate product image URL with fallback support
+function generateProductImage(productName: string, searchTerms: string, productId: string): string {
+  try {
+    switch (IMAGE_CONFIG.provider) {
+      case 'unsplash':
+        return imageGenerators.unsplash(searchTerms);
+      case 'picsum':
+        return imageGenerators.picsum(productId);
+      case 'placeholder':
+        return imageGenerators.placeholder(productName);
+      case 'static':
+        return imageGenerators.static(productName);
+      default:
+        return imageGenerators[IMAGE_CONFIG.fallbackProvider](productName);
+    }
+  } catch (error) {
+    // Fallback to placeholder if anything goes wrong
+    return imageGenerators.placeholder(productName);
+  }
+}
+
+// Curated B2B product catalog for realistic demo data
+// Easy to expand - just add more products with matching image search terms
+const B2B_PRODUCTS = [
+  { name: "Steel Toe Work Boots", brand: "Caterpillar", category: "Safety Equipment", image: "construction,boots" },
+  { name: "High-Visibility Safety Vest", brand: "3M", category: "Safety Equipment", image: "safety,vest" },
+  { name: "Hard Hat with LED Light", brand: "MSA Safety", category: "Safety Equipment", image: "hardhat,construction" },
+  { name: "Cut-Resistant Work Gloves", brand: "Mechanix", category: "Safety Equipment", image: "work,gloves" },
+  { name: "Cordless Drill Kit", brand: "DeWalt", category: "Power Tools", image: "drill,tools" },
+  { name: "Impact Socket Set", brand: "Craftsman", category: "Hand Tools", image: "socket,wrench" },
+  { name: "Digital Multimeter", brand: "Fluke", category: "Test Equipment", image: "multimeter,electrical" },
+  { name: "LED Work Light", brand: "Milwaukee", category: "Lighting", image: "worklight,LED" },
+  { name: "Welding Helmet", brand: "Lincoln Electric", category: "Welding", image: "welding,helmet" },
+  { name: "Hydraulic Floor Jack", brand: "Blackhawk", category: "Automotive", image: "floor,jack" },
+  { name: "Industrial Wire Shelving", brand: "Metro", category: "Storage", image: "shelving,warehouse" },
+  { name: "Safety Lockout Kit", brand: "Brady", category: "Safety Equipment", image: "lockout,safety" },
+  { name: "Portable Generator", brand: "Honda", category: "Power Equipment", image: "generator,portable" },
+  { name: "Fire Extinguisher", brand: "Amerex", category: "Safety Equipment", image: "fire,extinguisher" },
+  { name: "First Aid Kit", brand: "Johnson & Johnson", category: "Medical", image: "first,aid" },
+  { name: "Respirator Face Mask", brand: "3M", category: "Safety Equipment", image: "respirator,mask" },
+  { name: "Cutting Torch Set", brand: "Victor", category: "Welding", image: "torch,cutting" },
+  { name: "Tool Storage Cabinet", brand: "Snap-on", category: "Storage", image: "tool,cabinet" },
+  { name: "Safety Eyewear", brand: "Uvex", category: "Safety Equipment", image: "safety,glasses" },
+  { name: "Lifting Straps", brand: "Crosby", category: "Rigging", image: "lifting,straps" }
+];
+
+// Switch between generators here - change this to use styled products
+const USE_STYLED_PRODUCTS = true;
+
+// ============================================================================
+// PRODUCT GENERATORS
+// ============================================================================
+
+// Original faker-based generator - completely random products (often nonsensical)
+export function generateRandomProduct(categoryId?: string): Product {
   const basePrice = faker.number.float({ min: 20, max: 2000, fractionDigits: 2 });
   
   return {
@@ -70,6 +152,37 @@ export function generateProduct(categoryId?: string): Product {
     inStock: faker.datatype.boolean(0.9),
     stockQuantity: faker.number.int({ min: 0, max: 500 })
   };
+}
+
+// Styled generator with realistic B2B products and configurable images
+export function generateStyledProduct(categoryId?: string): Product {
+  const productTemplate = faker.helpers.arrayElement(B2B_PRODUCTS);
+  const basePrice = faker.number.float({ min: 20, max: 2000, fractionDigits: 2 });
+  const productId = faker.string.uuid();
+  
+  return {
+    id: productId,
+    name: productTemplate.name,
+    brand: productTemplate.brand,
+    model: faker.string.alphanumeric(6).toUpperCase(),
+    sku: faker.string.alphanumeric(8).toUpperCase(),
+    description: `Professional grade ${productTemplate.name.toLowerCase()} designed for industrial use. Built to withstand demanding work environments.`,
+    dimensions: generateDimensions(),
+    reviews: Array.from({ length: faker.number.int({ min: 0, max: 10 }) }, generateReview),
+    volumePricing: Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, generateVolumePrice),
+    category: categoryId || faker.string.uuid(),
+    basePrice,
+    imageUrl: generateProductImage(productTemplate.name, productTemplate.image, productId),
+    inStock: faker.datatype.boolean(0.9),
+    stockQuantity: faker.number.int({ min: 0, max: 500 })
+  };
+}
+
+// Main product generator - switches between styled and random based on USE_STYLED_PRODUCTS flag
+export function generateProduct(categoryId?: string): Product {
+  return USE_STYLED_PRODUCTS 
+    ? generateStyledProduct(categoryId)
+    : generateRandomProduct(categoryId);
 }
 
 export function generateSalesperson(): Salesperson {
