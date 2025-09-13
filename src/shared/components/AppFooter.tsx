@@ -1,9 +1,6 @@
-import { InlineStack, Text, BlockStack } from '@shopify/polaris';
+import { InlineStack, Text } from '@shopify/polaris';
 import { StoreIcon, SettingsIcon, PersonIcon } from '@shopify/polaris-icons';
 import { Link } from 'react-router-dom';
-import logoImage from '../../assets/Logo-blue-Large.png';
-
-const APP_VERSION = 'v0.001';
 
 export default function AppFooter() {
   const linkStyle = {

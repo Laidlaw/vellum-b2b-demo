@@ -11,7 +11,7 @@ import type { Product, Company, Quote, Salesperson, ProductCategory, Order, User
 
 // Generate seed data for the demo
 export function generateSeedData() {
-  // Generate categories
+  // Generate categories - exactly 8 unique B2B categories
   const categories: ProductCategory[] = Array.from({ length: 8 }, generateProductCategory);
   
   // Generate salespeople

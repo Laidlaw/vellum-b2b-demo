@@ -170,7 +170,7 @@ export function generateStyledProduct(categoryId?: string): Product {
     dimensions: generateDimensions(),
     reviews: Array.from({ length: faker.number.int({ min: 0, max: 10 }) }, generateReview),
     volumePricing: Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, generateVolumePrice),
-    category: categoryId || faker.string.uuid(),
+    category: categoryId || productTemplate.category, // Use the product template's category instead of UUID
     basePrice,
     imageUrl: generateProductImage(productTemplate.name, productTemplate.image, productId),
     inStock: faker.datatype.boolean(0.9),
@@ -418,13 +418,34 @@ export function generateQuote(companyId: string, products: Product[]): Quote {
   };
 }
 
+// Predefined B2B categories that align with the product catalog
+const B2B_CATEGORIES = [
+  { name: 'Safety Equipment', description: 'Personal protective equipment and safety gear for industrial environments' },
+  { name: 'Power Tools', description: 'Professional-grade power tools for construction and manufacturing' },
+  { name: 'Hand Tools', description: 'Manual tools and precision instruments for skilled trades' },
+  { name: 'Test Equipment', description: 'Measurement and diagnostic equipment for electrical and electronic work' },
+  { name: 'Lighting', description: 'Industrial and commercial lighting solutions' },
+  { name: 'Welding', description: 'Welding equipment and accessories for metal fabrication' },
+  { name: 'Automotive', description: 'Professional automotive tools and equipment' },
+  { name: 'Storage', description: 'Industrial storage solutions and organizational systems' },
+  { name: 'Power Equipment', description: 'Generators, compressors, and other power equipment' },
+  { name: 'Medical', description: 'Medical supplies and first aid equipment for workplace safety' },
+  { name: 'Rigging', description: 'Lifting and rigging equipment for heavy-duty applications' }
+];
+
+// Counter to cycle through predefined categories
+let categoryCounter = 0;
+
 export function generateProductCategory(): ProductCategory {
+  const categoryTemplate = B2B_CATEGORIES[categoryCounter % B2B_CATEGORIES.length];
+  categoryCounter++;
+  
   return {
     id: faker.string.uuid(),
-    name: faker.commerce.department(),
-    description: faker.lorem.sentence(),
+    name: categoryTemplate.name,
+    description: categoryTemplate.description,
     imageUrl: faker.image.url({ width: 300, height: 200 }),
-    isActive: faker.datatype.boolean(0.9)
+    isActive: faker.datatype.boolean(0.95) // Higher chance of being active for demo
   };
 }
 
