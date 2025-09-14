@@ -9,6 +9,10 @@ import { ProductCatalog } from '../../shared/components/ProductCatalog';
 import { ProductDetails } from '../../shared/components/ProductDetails';
 import { StorefrontNavigation } from '../../shared/components/StorefrontNavigation';
 import { QuoteBuilder } from '../../shared/components/QuoteBuilder';
+import { HeroSection } from '../../shared/components/HeroSection';
+import { FeaturedProducts } from '../../shared/components/FeaturedProducts';
+import { CategoryProductRows } from '../../shared/components/CategoryProductRows';
+import { TrustSignals } from '../../shared/components/TrustSignals';
 
 // Import types
 import type { Product, ProductCategory, User, ShoppingCart, QuoteItem } from '../../shared/types';
@@ -30,46 +34,139 @@ const mockUser: User = {
 };
 
 function StorefrontHome() {
+  const [showQuoteBuilder, setShowQuoteBuilder] = useState(false);
+  const [pendingQuoteItems, setPendingQuoteItems] = useState<QuoteItem[]>([]);
+  const [toastActive, setToastActive] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+
+  // Fetch products and categories for the homepage
+  const { data: productsResponse, isLoading: isLoadingProducts } = useQuery({
+    queryKey: ['products'],
+    queryFn: async () => {
+      const response = await fetch('/api/products');
+      return response.json();
+    }
+  });
+
+  const { data: categoriesResponse, isLoading: isLoadingCategories } = useQuery({
+    queryKey: ['categories'],
+    queryFn: async () => {
+      const response = await fetch('/api/categories');
+      return response.json();
+    }
+  });
+
+  const products: Product[] = productsResponse?.data || [];
+  const categories: ProductCategory[] = categoriesResponse?.data || [];
+
+  const handleRequestQuote = () => {
+    // Navigate to products page for quote building
+    window.location.href = '/storefront/products';
+  };
+
+  const handleContactSales = () => {
+    // In real app, this would open contact form or redirect
+    setToastMessage('Contact form would open here - sales@company.com');
+    setToastActive(true);
+  };
+
+  const handleAddToQuote = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      const quoteItem: QuoteItem = {
+        productId: product.id,
+        product: product,
+        quantity: 1,
+        unitPrice: product.basePrice,
+        totalPrice: product.basePrice
+      };
+      setPendingQuoteItems([quoteItem]);
+      setShowQuoteBuilder(true);
+    }
+  };
+
+  const handleViewDetails = (productId: string) => {
+    window.location.href = `/storefront/products/${productId}`;
+  };
+
+  const handleSubmitQuote = () => {
+    setToastMessage('Quote request submitted successfully');
+    setToastActive(true);
+    setPendingQuoteItems([]);
+    setShowQuoteBuilder(false);
+  };
+
+  const toastMarkup = toastActive ? (
+    <Toast content={toastMessage} onDismiss={() => setToastActive(false)} />
+  ) : null;
+
   return (
-    <Page title="B2B Storefront">
-      <BlockStack gap="400">
-        <Card>
-          <BlockStack gap="200">
-            <Text as="h2" variant="headingMd">
-              Welcome to the B2B Storefront
-            </Text>
-            <Text as="p">
-              This is where B2B shoppers browse products, add items to cart or quotes, and manage their orders.
-            </Text>
-            <InlineStack gap="200">
-              <Link to="/storefront/products">
-                <Button>Browse Products</Button>
-              </Link>
-              <Link to="/storefront/cart">
-                <Button variant="secondary">View Cart</Button>
-              </Link>
-              <Link to="/storefront/quotes">
-                <Button variant="secondary">My Quotes</Button>
-              </Link>
-            </InlineStack>
-          </BlockStack>
-        </Card>
-        
-        <Card>
-          <BlockStack gap="200">
-            <Text as="h3" variant="headingMd">Quick Links</Text>
-            <InlineStack gap="200">
-              <Link to="/customer-admin">
-                <Button variant="plain">Customer Admin</Button>
-              </Link>
-              <Link to="/merchant-portal">
-                <Button variant="plain">Merchant Portal</Button>
-              </Link>
-            </InlineStack>
-          </BlockStack>
-        </Card>
-      </BlockStack>
-    </Page>
+    <>
+      <Page title="Industrial Solutions">
+        <BlockStack gap="600">
+          {/* Hero Section */}
+          <HeroSection 
+            onRequestQuote={handleRequestQuote}
+            onContactSales={handleContactSales}
+          />
+
+          {/* Featured Products */}
+          <FeaturedProducts
+            products={products}
+            onAddToQuote={handleAddToQuote}
+            onViewDetails={handleViewDetails}
+            isLoading={isLoadingProducts}
+          />
+
+          {/* Category Product Rows */}
+          <CategoryProductRows
+            products={products}
+            categories={categories}
+            onAddToQuote={handleAddToQuote}
+            onViewDetails={handleViewDetails}
+            isLoading={isLoadingProducts || isLoadingCategories}
+          />
+
+          {/* Trust Signals & B2B Features */}
+          <TrustSignals 
+            onContactSales={handleContactSales}
+          />
+
+          {/* Quick Demo Links (for development only) */}
+          <Card tone="subdued">
+            <BlockStack gap="200">
+              <Text as="h4" variant="headingMd">Demo Navigation</Text>
+              <InlineStack gap="200" wrap>
+                <Link to="/customer-admin">
+                  <Button variant="plain" size="slim">Customer Admin</Button>
+                </Link>
+                <Link to="/merchant-portal">
+                  <Button variant="plain" size="slim">Merchant Portal</Button>
+                </Link>
+                <Link to="/storefront/products">
+                  <Button variant="plain" size="slim">Full Catalog</Button>
+                </Link>
+                <Link to="/storefront/cart">
+                  <Button variant="plain" size="slim">Shopping Cart</Button>
+                </Link>
+                <Link to="/storefront/quotes">
+                  <Button variant="plain" size="slim">My Quotes</Button>
+                </Link>
+              </InlineStack>
+            </BlockStack>
+          </Card>
+        </BlockStack>
+      </Page>
+
+      <QuoteBuilder
+        isOpen={showQuoteBuilder}
+        onClose={() => setShowQuoteBuilder(false)}
+        onSubmitQuote={handleSubmitQuote}
+        initialItems={pendingQuoteItems}
+      />
+
+      {toastMarkup}
+    </>
   );
 }
 

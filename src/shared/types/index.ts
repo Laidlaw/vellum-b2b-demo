@@ -41,6 +41,13 @@ export interface Product {
   imageUrl: string;
   inStock: boolean;
   stockQuantity: number;
+  isFeatured?: boolean;
+  isPremium?: boolean;
+  isBestseller?: boolean;
+  isNewProduct?: boolean;
+  isSeasonalPromo?: boolean;
+  certifications?: string[];
+  tags?: string[];
 }
 
 export interface QuoteItem {
