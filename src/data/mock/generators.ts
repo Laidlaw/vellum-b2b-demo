@@ -15,17 +15,36 @@ import type {
   Order,
   OrderItem
 } from '../../shared/types';
+import {
+  IMAGE_CONFIG,
+  IMAGE_GENERATORS,
+  PRODUCT_GENERATION,
+  B2B_PRODUCTS,
+  B2B_CATEGORIES,
+  COMPANY_DATA,
+  ORGANIZATIONAL_DATA,
+  USER_GENERATION,
+  DIMENSIONS,
+  QUOTE_GENERATION,
+  ORDER_GENERATION,
+  CART_GENERATION,
+  ADDRESS_GENERATION,
+  TIME_RANGES,
+  SALESPERSON_GENERATION,
+  CATEGORY_GENERATION
+} from './constants';
+import { getProductImage } from './product-images';
 
 // Mock data generators using faker
 
 export function generateDimensions(): Dimensions {
   return {
-    length: faker.number.float({ min: 1, max: 100, fractionDigits: 1 }),
-    width: faker.number.float({ min: 1, max: 100, fractionDigits: 1 }),
-    height: faker.number.float({ min: 1, max: 50, fractionDigits: 1 }),
-    weight: faker.number.float({ min: 0.1, max: 50, fractionDigits: 1 }),
-    units: faker.helpers.arrayElement(['inches', 'cm'] as const),
-    weightUnit: faker.helpers.arrayElement(['lbs', 'kg'] as const)
+    length: faker.number.float(DIMENSIONS.ranges.length),
+    width: faker.number.float(DIMENSIONS.ranges.width),
+    height: faker.number.float(DIMENSIONS.ranges.height),
+    weight: faker.number.float(DIMENSIONS.ranges.weight),
+    units: faker.helpers.arrayElement(DIMENSIONS.units),
+    weightUnit: faker.helpers.arrayElement(DIMENSIONS.weightUnits)
   };
 }
 
@@ -36,18 +55,21 @@ export function generateReview(): Review {
     userName: faker.person.fullName(),
     rating: faker.number.int({ min: 1, max: 5 }),
     comment: faker.lorem.sentences(2),
-    dateCreated: faker.date.past({ years: 1 }),
-    verified: faker.datatype.boolean(0.8)
+    dateCreated: faker.date.past(TIME_RANGES.reviewAge),
+    verified: faker.datatype.boolean(PRODUCT_GENERATION.reviews.verifiedProbability)
   };
 }
 
 export function generateVolumePrice(): VolumePrice {
-  const minQuantity = faker.number.int({ min: 1, max: 100 });
+  const minQuantity = faker.number.int(PRODUCT_GENERATION.volumePricing.minQuantityRange);
   return {
     minQuantity,
-    maxQuantity: faker.number.int({ min: minQuantity + 10, max: minQuantity + 500 }),
-    pricePerUnit: faker.number.float({ min: 10, max: 1000, fractionDigits: 2 }),
-    discountPercentage: faker.number.int({ min: 5, max: 25 })
+    maxQuantity: faker.number.int({ 
+      min: minQuantity + PRODUCT_GENERATION.volumePricing.maxQuantityBuffer.min, 
+      max: minQuantity + PRODUCT_GENERATION.volumePricing.maxQuantityBuffer.max 
+    }),
+    pricePerUnit: faker.number.float(PRODUCT_GENERATION.volumePricing.priceRange),
+    discountPercentage: faker.number.int(PRODUCT_GENERATION.volumePricing.discountRange)
   };
 }
 
@@ -55,78 +77,9 @@ export function generateVolumePrice(): VolumePrice {
 // PRODUCT GENERATOR CONFIGURATION
 // ============================================================================
 
-// Image provider configuration - easily switch between services
-type ImageProvider = 'unsplash' | 'picsum' | 'placeholder' | 'static';
-
-const IMAGE_CONFIG = {
-  provider: 'picsum' as ImageProvider, // Switch provider here
-  fallbackProvider: 'placeholder' as ImageProvider,
-  dimensions: { width: 400, height: 400 }
-};
-
-// Image URL generators for different services
-const imageGenerators = {
-  unsplash: (searchTerms: string) => 
-    `https://source.unsplash.com/${IMAGE_CONFIG.dimensions.width}x${IMAGE_CONFIG.dimensions.height}/?${searchTerms}`,
-  
-  picsum: (productId: string) => 
-    `https://picsum.photos/${IMAGE_CONFIG.dimensions.width}/${IMAGE_CONFIG.dimensions.height}?random=${productId}`,
-  
-  placeholder: (productName: string) => 
-    `https://via.placeholder.com/${IMAGE_CONFIG.dimensions.width}x${IMAGE_CONFIG.dimensions.height}/cccccc/666666?text=${encodeURIComponent(productName)}`,
-  
-  static: (category: string) => 
-    `/images/products/${category.toLowerCase().replace(/\s+/g, '-')}.jpg`
-};
-
 // Generate product image URL with fallback support
-function generateProductImage(productName: string, searchTerms: string, productId: string): string {
-  try {
-    switch (IMAGE_CONFIG.provider) {
-      case 'unsplash':
-        return imageGenerators.unsplash(searchTerms);
-      case 'picsum':
-        return imageGenerators.picsum(productId);
-      case 'placeholder':
-        return imageGenerators.placeholder(productName);
-      case 'static':
-        return imageGenerators.static(productName);
-      default:
-        return imageGenerators[IMAGE_CONFIG.fallbackProvider](productName);
-    }
-  } catch {
-    // Fallback to placeholder if anything goes wrong
-    return imageGenerators.placeholder(productName);
-  }
-}
+// Old function removed - now using curated product image system from product-images.ts
 
-// Curated B2B product catalog for realistic demo data
-// Easy to expand - just add more products with matching image search terms
-const B2B_PRODUCTS = [
-  { name: "Steel Toe Work Boots", brand: "Caterpillar", category: "Safety Equipment", image: "construction,boots" },
-  { name: "High-Visibility Safety Vest", brand: "3M", category: "Safety Equipment", image: "safety,vest" },
-  { name: "Hard Hat with LED Light", brand: "MSA Safety", category: "Safety Equipment", image: "hardhat,construction" },
-  { name: "Cut-Resistant Work Gloves", brand: "Mechanix", category: "Safety Equipment", image: "work,gloves" },
-  { name: "Cordless Drill Kit", brand: "DeWalt", category: "Power Tools", image: "drill,tools" },
-  { name: "Impact Socket Set", brand: "Craftsman", category: "Hand Tools", image: "socket,wrench" },
-  { name: "Digital Multimeter", brand: "Fluke", category: "Test Equipment", image: "multimeter,electrical" },
-  { name: "LED Work Light", brand: "Milwaukee", category: "Lighting", image: "worklight,LED" },
-  { name: "Welding Helmet", brand: "Lincoln Electric", category: "Welding", image: "welding,helmet" },
-  { name: "Hydraulic Floor Jack", brand: "Blackhawk", category: "Automotive", image: "floor,jack" },
-  { name: "Industrial Wire Shelving", brand: "Metro", category: "Storage", image: "shelving,warehouse" },
-  { name: "Safety Lockout Kit", brand: "Brady", category: "Safety Equipment", image: "lockout,safety" },
-  { name: "Portable Generator", brand: "Honda", category: "Power Equipment", image: "generator,portable" },
-  { name: "Fire Extinguisher", brand: "Amerex", category: "Safety Equipment", image: "fire,extinguisher" },
-  { name: "First Aid Kit", brand: "Johnson & Johnson", category: "Medical", image: "first,aid" },
-  { name: "Respirator Face Mask", brand: "3M", category: "Safety Equipment", image: "respirator,mask" },
-  { name: "Cutting Torch Set", brand: "Victor", category: "Welding", image: "torch,cutting" },
-  { name: "Tool Storage Cabinet", brand: "Snap-on", category: "Storage", image: "tool,cabinet" },
-  { name: "Safety Eyewear", brand: "Uvex", category: "Safety Equipment", image: "safety,glasses" },
-  { name: "Lifting Straps", brand: "Crosby", category: "Rigging", image: "lifting,straps" }
-];
-
-// Switch between generators here - change this to use styled products
-const USE_STYLED_PRODUCTS = true;
 
 // ============================================================================
 // PRODUCT GENERATORS
@@ -134,7 +87,7 @@ const USE_STYLED_PRODUCTS = true;
 
 // Original faker-based generator - completely random products (often nonsensical)
 export function generateRandomProduct(categoryId?: string): Product {
-  const basePrice = faker.number.float({ min: 20, max: 2000, fractionDigits: 2 });
+  const basePrice = faker.number.float(PRODUCT_GENERATION.pricing);
   
   return {
     id: faker.string.uuid(),
@@ -144,20 +97,20 @@ export function generateRandomProduct(categoryId?: string): Product {
     sku: faker.string.alphanumeric(8).toUpperCase(),
     description: faker.commerce.productDescription(),
     dimensions: generateDimensions(),
-    reviews: Array.from({ length: faker.number.int({ min: 0, max: 10 }) }, generateReview),
-    volumePricing: Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, generateVolumePrice),
+    reviews: Array.from({ length: faker.number.int({ min: 0, max: PRODUCT_GENERATION.reviews.maxCount }) }, generateReview),
+    volumePricing: Array.from({ length: faker.number.int({ min: 1, max: PRODUCT_GENERATION.volumePricing.maxTiers }) }, generateVolumePrice),
     category: categoryId || faker.string.uuid(),
     basePrice,
-    imageUrl: faker.image.url({ width: 400, height: 400 }),
-    inStock: faker.datatype.boolean(0.9),
-    stockQuantity: faker.number.int({ min: 0, max: 500 })
+    imageUrl: getProductImage(faker.commerce.productName(), 'General', faker.string.uuid()),
+    inStock: faker.datatype.boolean(PRODUCT_GENERATION.stock.probabilityInStock),
+    stockQuantity: faker.number.int({ min: 0, max: PRODUCT_GENERATION.stock.maxQuantity })
   };
 }
 
 // Styled generator with realistic B2B products and configurable images
 export function generateStyledProduct(categoryId?: string): Product {
   const productTemplate = faker.helpers.arrayElement(B2B_PRODUCTS);
-  const basePrice = faker.number.float({ min: 20, max: 2000, fractionDigits: 2 });
+  const basePrice = faker.number.float(PRODUCT_GENERATION.pricing);
   const productId = faker.string.uuid();
   
   return {
@@ -168,19 +121,30 @@ export function generateStyledProduct(categoryId?: string): Product {
     sku: faker.string.alphanumeric(8).toUpperCase(),
     description: `Professional grade ${productTemplate.name.toLowerCase()} designed for industrial use. Built to withstand demanding work environments.`,
     dimensions: generateDimensions(),
-    reviews: Array.from({ length: faker.number.int({ min: 0, max: 10 }) }, generateReview),
-    volumePricing: Array.from({ length: faker.number.int({ min: 1, max: 3 }) }, generateVolumePrice),
+    reviews: Array.from({ length: faker.number.int({ min: 2, max: PRODUCT_GENERATION.reviews.maxCount }) }, generateReview),
+    volumePricing: Array.from({ length: faker.number.int({ min: 1, max: PRODUCT_GENERATION.volumePricing.maxTiers }) }, (_, index) => generateVolumePrice(basePrice, index)),
     category: categoryId || productTemplate.category, // Use the product template's category instead of UUID
     basePrice,
-    imageUrl: generateProductImage(productTemplate.name, productTemplate.image, productId),
-    inStock: faker.datatype.boolean(0.9),
-    stockQuantity: faker.number.int({ min: 0, max: 500 })
+    imageUrl: getProductImage(productTemplate.name, productTemplate.category, productId),
+    inStock: faker.datatype.boolean(PRODUCT_GENERATION.stock.probabilityInStock),
+    stockQuantity: faker.number.int({ min: 0, max: PRODUCT_GENERATION.stock.maxQuantity }),
+    
+    // Enhanced product features
+    isFeatured: faker.datatype.boolean(PRODUCT_GENERATION.featuredProbability),
+    isPremium: faker.datatype.boolean(PRODUCT_GENERATION.premiumProbability),
+    isBestseller: faker.datatype.boolean(PRODUCT_GENERATION.bestsellerProbability),
+    isNewProduct: faker.datatype.boolean(PRODUCT_GENERATION.newProductProbability),
+    isSeasonalPromo: faker.datatype.boolean(PRODUCT_GENERATION.seasonalPromoProbability),
+    
+    // Add certifications and tags from the template
+    certifications: 'certifications' in productTemplate ? productTemplate.certifications : undefined,
+    tags: 'tags' in productTemplate ? productTemplate.tags : []
   };
 }
 
-// Main product generator - switches between styled and random based on USE_STYLED_PRODUCTS flag
+// Main product generator - switches between styled and random based on configuration flag
 export function generateProduct(categoryId?: string): Product {
-  return USE_STYLED_PRODUCTS 
+  return PRODUCT_GENERATION.useStyledProducts 
     ? generateStyledProduct(categoryId)
     : generateRandomProduct(categoryId);
 }
@@ -193,86 +157,16 @@ export function generateSalesperson(): Salesperson {
     email: faker.internet.email(),
     phone: faker.phone.number(),
     territory: faker.location.state(),
-    isActive: faker.datatype.boolean(0.95)
+    isActive: faker.datatype.boolean(SALESPERSON_GENERATION.activeProbability)
   };
 }
 
-// B2B departments and job titles for realistic user generation
-const B2B_DEPARTMENTS = [
-  'Operations',
-  'Procurement', 
-  'Finance',
-  'Sales',
-  'Engineering',
-  'Quality Assurance',
-  'Warehouse',
-  'Customer Service',
-  'IT',
-  'Human Resources'
-];
-
-const JOB_TITLES_BY_ROLE = {
-  admin: [
-    'Account Administrator',
-    'System Administrator', 
-    'Operations Manager',
-    'General Manager'
-  ],
-  manager: [
-    'Procurement Manager',
-    'Department Manager',
-    'Operations Supervisor',
-    'Finance Manager',
-    'Warehouse Manager'
-  ],
-  purchaser: [
-    'Procurement Specialist',
-    'Purchasing Agent', 
-    'Buyer',
-    'Supply Chain Coordinator'
-  ],
-  'sub-contractor': [
-    'External Consultant',
-    'Contract Worker',
-    'Temporary Staff',
-    'Freelance Specialist'
-  ]
-};
-
-const PERMISSIONS_BY_ROLE = {
-  admin: [
-    'full_access',
-    'manage_team',
-    'approve_orders',
-    'manage_quotes',
-    'view_reports',
-    'system_settings'
-  ],
-  manager: [
-    'approve_orders',
-    'manage_quotes',
-    'view_reports',
-    'manage_department',
-    'approve_quotes'
-  ],
-  purchaser: [
-    'create_orders',
-    'view_quotes',
-    'request_quotes',
-    'view_products'
-  ],
-  'sub-contractor': [
-    'view_orders',
-    'view_products',
-    'limited_access'
-  ]
-};
 
 export function generateUser(companyId: string, role: User['role'] = 'purchaser'): User {
   const firstName = faker.person.firstName();
   const lastName = faker.person.lastName();
-  const department = faker.helpers.arrayElement(B2B_DEPARTMENTS);
-  const jobTitle = faker.helpers.arrayElement(JOB_TITLES_BY_ROLE[role]);
+  const department = faker.helpers.arrayElement(ORGANIZATIONAL_DATA.departments);
+  const jobTitle = faker.helpers.arrayElement(ORGANIZATIONAL_DATA.jobTitlesByRole[role]);
   
   return {
     id: faker.string.uuid(),
@@ -281,18 +175,14 @@ export function generateUser(companyId: string, role: User['role'] = 'purchaser'
     email: faker.internet.email({ firstName, lastName }),
     role,
     department,
-    location: faker.datatype.boolean(0.3) ? faker.location.city() : undefined,
+    location: faker.datatype.boolean(USER_GENERATION.locationProbability) ? faker.location.city() : undefined,
     companyId,
-    status: faker.helpers.weightedArrayElement([
-      { weight: 0.8, value: 'active' as const },
-      { weight: 0.15, value: 'inactive' as const },
-      { weight: 0.05, value: 'pending' as const }
-    ]),
-    permissions: PERMISSIONS_BY_ROLE[role],
-    phone: faker.datatype.boolean(0.7) ? faker.phone.number() : undefined,
+    status: faker.helpers.weightedArrayElement(USER_GENERATION.statusDistribution),
+    permissions: ORGANIZATIONAL_DATA.permissionsByRole[role],
+    phone: faker.datatype.boolean(USER_GENERATION.phoneProbability) ? faker.phone.number() : undefined,
     jobTitle,
-    dateCreated: faker.date.past({ years: 2 }),
-    lastLogin: faker.date.recent({ days: 30 })
+    dateCreated: faker.date.past({ years: USER_GENERATION.accountAgeYears }),
+    lastLogin: faker.date.recent({ days: USER_GENERATION.lastLoginDays })
   };
 }
 
@@ -302,16 +192,9 @@ export function generateCompany(predefinedId?: string): Company {
   
   return {
     id: companyId,
-    name: predefinedId ? 'Acme Industrial Solutions' : faker.company.name(),
+    name: predefinedId ? COMPANY_DATA.defaultCompany.name : faker.company.name(),
     logoUrl: faker.image.url({ width: 200, height: 100 }),
-    industry: faker.helpers.arrayElement([
-      'Manufacturing',
-      'Healthcare',
-      'Technology',
-      'Retail',
-      'Construction',
-      'Education'
-    ]),
+    industry: faker.helpers.arrayElement(COMPANY_DATA.industries),
     addresses: [
       {
         id: faker.string.uuid(),
@@ -323,22 +206,22 @@ export function generateCompany(predefinedId?: string): Company {
         city: faker.location.city(),
         state: faker.location.state(),
         zipCode: faker.location.zipCode(),
-        country: 'US',
+        country: ADDRESS_GENERATION.defaultCountry,
         phone: faker.phone.number()
       }
     ],
-    users: Array.from({ length: faker.number.int({ min: 2, max: 8 }) }, () => generateUser(companyId)),
+    users: Array.from({ length: faker.number.int(COMPANY_DATA.teamSizeRange) }, () => generateUser(companyId)),
     salespersonId,
-    integrationChannel: faker.helpers.arrayElement(['salesforce', 'hubspot', 'manual']),
-    isActive: faker.datatype.boolean(0.95),
-    dateCreated: faker.date.past({ years: 3 })
+    integrationChannel: faker.helpers.arrayElement(COMPANY_DATA.integrationChannels),
+    isActive: faker.datatype.boolean(COMPANY_DATA.activeProbability),
+    dateCreated: faker.date.past(TIME_RANGES.companyAge)
   };
 }
 
 export function generateQuoteItem(product: Product): QuoteItem {
   const quantity = faker.number.int({ min: 1, max: 100 });
   const unitPrice = product.basePrice;
-  const discount = faker.datatype.boolean(0.3) ? faker.number.float({ min: 0.05, max: 0.2, fractionDigits: 2 }) : 0;
+  const discount = faker.datatype.boolean(QUOTE_GENERATION.discountProbability) ? faker.number.float(QUOTE_GENERATION.discountRange) : 0;
   
   return {
     productId: product.id,
@@ -358,11 +241,11 @@ function generateAddress(type: 'billing' | 'shipping'): Address {
     firstName: faker.person.firstName(),
     lastName: faker.person.lastName(),
     address1: faker.location.streetAddress(),
-    address2: faker.datatype.boolean(0.3) ? faker.location.secondaryAddress() : undefined,
+    address2: faker.datatype.boolean(ADDRESS_GENERATION.secondaryAddressProbability) ? faker.location.secondaryAddress() : undefined,
     city: faker.location.city(),
     state: faker.location.state(),
     zipCode: faker.location.zipCode(),
-    country: 'US',
+    country: ADDRESS_GENERATION.defaultCountry,
     phone: faker.phone.number()
   };
 }
@@ -384,14 +267,14 @@ function calculateTimeUntilExpiration(expiredDate: Date): string {
 
 export function generateQuote(companyId: string, products: Product[]): Quote {
   const items = Array.from({ 
-    length: faker.number.int({ min: 1, max: 5 }) 
+    length: faker.number.int(QUOTE_GENERATION.itemCount) 
   }, () => generateQuoteItem(faker.helpers.arrayElement(products)));
   
   const amount = items.reduce((sum, item) => sum + item.totalPrice, 0);
-  const dateCreated = faker.date.past({ years: 1 });
+  const dateCreated = faker.date.past(TIME_RANGES.quoteHistory);
   
-  // Generate expiration date 7-90 days from creation
-  const expirationDays = faker.number.int({ min: 7, max: 90 });
+  // Generate expiration date from creation
+  const expirationDays = faker.number.int(QUOTE_GENERATION.expirationDays);
   const dateExpired = new Date(dateCreated);
   dateExpired.setDate(dateExpired.getDate() + expirationDays);
   
@@ -404,12 +287,12 @@ export function generateQuote(companyId: string, products: Product[]): Quote {
     dateCreated,
     dateExpired,
     amount,
-    purchaseOrderNumber: faker.datatype.boolean(0.4) ? faker.string.alphanumeric(10).toUpperCase() : undefined,
-    status: faker.helpers.arrayElement(['draft', 'pending', 'approved', 'expired', 'rejected'] as const),
+    purchaseOrderNumber: faker.datatype.boolean(QUOTE_GENERATION.purchaseOrderProbability) ? faker.string.alphanumeric(10).toUpperCase() : undefined,
+    status: faker.helpers.arrayElement(QUOTE_GENERATION.statuses),
     items,
     companyId,
     salespersonId: faker.string.uuid(),
-    integrationChannel: faker.helpers.arrayElement(['salesforce', 'hubspot', 'manual']),
+    integrationChannel: faker.helpers.arrayElement(COMPANY_DATA.integrationChannels),
     approxDeliveryDate: faker.date.future({ refDate: dateExpired }),
     shippingAddress,
     billingAddress,
@@ -417,21 +300,6 @@ export function generateQuote(companyId: string, products: Product[]): Quote {
     timeUntilExpiration: calculateTimeUntilExpiration(dateExpired)
   };
 }
-
-// Predefined B2B categories that align with the product catalog
-const B2B_CATEGORIES = [
-  { name: 'Safety Equipment', description: 'Personal protective equipment and safety gear for industrial environments' },
-  { name: 'Power Tools', description: 'Professional-grade power tools for construction and manufacturing' },
-  { name: 'Hand Tools', description: 'Manual tools and precision instruments for skilled trades' },
-  { name: 'Test Equipment', description: 'Measurement and diagnostic equipment for electrical and electronic work' },
-  { name: 'Lighting', description: 'Industrial and commercial lighting solutions' },
-  { name: 'Welding', description: 'Welding equipment and accessories for metal fabrication' },
-  { name: 'Automotive', description: 'Professional automotive tools and equipment' },
-  { name: 'Storage', description: 'Industrial storage solutions and organizational systems' },
-  { name: 'Power Equipment', description: 'Generators, compressors, and other power equipment' },
-  { name: 'Medical', description: 'Medical supplies and first aid equipment for workplace safety' },
-  { name: 'Rigging', description: 'Lifting and rigging equipment for heavy-duty applications' }
-];
 
 // Counter to cycle through predefined categories
 let categoryCounter = 0;
@@ -444,8 +312,8 @@ export function generateProductCategory(): ProductCategory {
     id: faker.string.uuid(),
     name: categoryTemplate.name,
     description: categoryTemplate.description,
-    imageUrl: faker.image.url({ width: 300, height: 200 }),
-    isActive: faker.datatype.boolean(0.95) // Higher chance of being active for demo
+    imageUrl: faker.image.url(CATEGORY_GENERATION.imageSize),
+    isActive: faker.datatype.boolean(CATEGORY_GENERATION.activeProbability)
   };
 }
 
@@ -453,14 +321,18 @@ export function generateCartItem(product: Product): CartItem {
   return {
     productId: product.id,
     product,
-    quantity: faker.number.int({ min: 1, max: 20 }),
-    discount: faker.datatype.boolean(0.2) ? faker.number.float({ min: 0.05, max: 0.15, fractionDigits: 2 }) : undefined
+    quantity: faker.number.int(CART_GENERATION.quantityRange),
+    discount: faker.datatype.boolean(CART_GENERATION.discountProbability) ? faker.number.float(CART_GENERATION.discountRange) : undefined
   };
 }
 
 export function generateOrderItem(product: Product): OrderItem {
   const quantity = faker.number.int({ min: 1, max: 10 });
-  const unitPrice = faker.number.float({ min: product.basePrice * 0.8, max: product.basePrice * 1.2, fractionDigits: 2 });
+  const unitPrice = faker.number.float({ 
+    min: product.basePrice * ORDER_GENERATION.priceVariance.min, 
+    max: product.basePrice * ORDER_GENERATION.priceVariance.max, 
+    fractionDigits: 2 
+  });
   
   return {
     productId: product.id,
@@ -472,11 +344,10 @@ export function generateOrderItem(product: Product): OrderItem {
 }
 
 export function generateOrder(products: Product[], companyId: string, userId: string): Order {
-  const dateCreated = faker.date.past({ years: 1 });
-  const dateConfirmed = faker.datatype.boolean(0.8) ? faker.date.between({ from: dateCreated, to: new Date() }) : undefined;
+  const dateCreated = faker.date.past(TIME_RANGES.orderHistory);
+  const dateConfirmed = faker.datatype.boolean(ORDER_GENERATION.confirmedProbability) ? faker.date.between({ from: dateCreated, to: new Date() }) : undefined;
   
-  // Generate 1-5 order items
-  const itemCount = faker.number.int({ min: 1, max: 5 });
+  const itemCount = faker.number.int(ORDER_GENERATION.itemCount);
   const selectedProducts = faker.helpers.arrayElements(products, itemCount);
   const items = selectedProducts.map(product => generateOrderItem(product));
   const totalAmount = items.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -484,8 +355,8 @@ export function generateOrder(products: Product[], companyId: string, userId: st
   const shippingAddress = generateAddress('shipping');
   const billingAddress = generateAddress('billing');
   
-  const status = faker.helpers.arrayElement(['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'] as const);
-  const paymentStatus = faker.helpers.arrayElement(['paid', 'partial', 'due', 'overdue'] as const);
+  const status = faker.helpers.arrayElement(ORDER_GENERATION.statuses);
+  const paymentStatus = faker.helpers.arrayElement(ORDER_GENERATION.paymentStatuses);
   
   return {
     id: faker.string.uuid(),
@@ -499,10 +370,10 @@ export function generateOrder(products: Product[], companyId: string, userId: st
     billingAddress,
     paymentStatus,
     paymentDueDate: paymentStatus === 'due' || paymentStatus === 'overdue' 
-      ? faker.date.future({ days: 30 }) 
+      ? faker.date.future({ days: ORDER_GENERATION.paymentDueDays }) 
       : undefined,
     companyId,
     userId,
-    notes: faker.datatype.boolean(0.3) ? faker.lorem.sentence() : undefined
+    notes: faker.datatype.boolean(ORDER_GENERATION.notesProbability) ? faker.lorem.sentence() : undefined
   };
 }
