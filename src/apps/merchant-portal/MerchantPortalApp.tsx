@@ -1,28 +1,27 @@
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { useState } from 'react';
-import { 
-  Page, 
-  Card, 
-  BlockStack, 
-  Text, 
-  Button, 
+import { useState, useEffect } from 'react';
+import {
+  Page,
+  Card,
+  BlockStack,
+  Text,
+  Button,
   InlineStack,
   Layout,
-  Navigation,
   TopBar,
   Frame
 } from '@shopify/polaris';
-import { 
-  HomeIcon,
-  OrderIcon,
-  ProductIcon,
-  PersonIcon,
+import {
   SettingsIcon,
-  NotificationIcon
+  NotificationIcon,
 } from '@shopify/polaris-icons';
 import { Link } from 'react-router-dom';
 import QuotesTable from './components/QuotesTable';
 import OrdersTable from './components/OrdersTable';
+import CompaniesPage from './pages/CompaniesPage';
+import CustomersPage from './pages/CustomersPage';
+import { MerchantNavigation } from './components/MerchantNavigation';
+import { createNavigationSections } from './config/navigationConfig';
 
 function MerchantPortalHome() {
   return (
@@ -37,7 +36,7 @@ function MerchantPortalHome() {
               Manage B2B companies, track deals, and oversee customer relationships integrated with Shopify.
             </Text>
             <InlineStack gap="200">
-              <Link to="/merchant-portal/companies">
+              <Link to="/merchant-portal/customers/companies">
                 <Button>Manage Companies</Button>
               </Link>
               <Link to="/merchant-portal/orders">
@@ -167,10 +166,23 @@ function InvoicesPage() {
 }
 
 export default function MerchantPortalApp() {
-  const [mobileNavigationActive, setMobileNavigationActive] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [mobileNavigationActive, setMobileNavigationActive] = useState(false);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [salesChannelsExpanded, setSalesChannelsExpanded] = useState(false);
+  const [appsExpanded, setAppsExpanded] = useState(false);
+  const [customersExpanded, setCustomersExpanded] = useState(
+    location.pathname.startsWith('/merchant-portal/customers')
+  );
+
+  // Auto-expand customers when on customer pages
+  useEffect(() => {
+    if (location.pathname.startsWith('/merchant-portal/customers')) {
+      setCustomersExpanded(true);
+    }
+  }, [location.pathname]);
 
   const toggleMobileNavigationActive = () =>
     setMobileNavigationActive((mobileNavigationActive) => !mobileNavigationActive);
@@ -187,49 +199,23 @@ export default function MerchantPortalApp() {
     }
   ];
   
+  const navigationSections = createNavigationSections(
+    location.pathname,
+    salesChannelsExpanded,
+    appsExpanded,
+    customersExpanded,
+    () => setSalesChannelsExpanded(!salesChannelsExpanded),
+    () => setAppsExpanded(!appsExpanded),
+    () => setCustomersExpanded(!customersExpanded)
+  );
+
   const navigationMarkup = (
-      <Navigation location={location.pathname}>
-        <Navigation.Section
-          items={[
-            {
-              label: 'Dashboard',
-              icon: HomeIcon,
-              onClick: () => navigate('/merchant-portal'),
-              selected: location.pathname === '/merchant-portal',
-            },
-            {
-              label: 'Quotes',
-              icon: ProductIcon,
-              onClick: () => navigate('/merchant-portal/quotes'),
-              selected: location.pathname.startsWith('/merchant-portal/quotes'),
-            },
-            {
-              label: 'Orders', 
-              icon: OrderIcon,
-              onClick: () => navigate('/merchant-portal/orders'),
-              selected: location.pathname.startsWith('/merchant-portal/orders'),
-            },
-            {
-              label: 'Invoices',
-              onClick: () => navigate('/merchant-portal/invoices'),
-              selected: location.pathname.startsWith('/merchant-portal/invoices'),
-            },
-            {
-              label: 'Team',
-              icon: PersonIcon,
-              onClick: () => navigate('/merchant-portal/users'),
-              selected: location.pathname.startsWith('/merchant-portal/users'),
-            },
-            {
-              label: 'Company',
-              icon: SettingsIcon,
-              onClick: () => navigate('/merchant-portal/company'),
-              selected: location.pathname.startsWith('/merchant-portal/company'),
-            },
-          ]}
-        />
-      </Navigation>
-    );
+    <MerchantNavigation
+      currentPath={location.pathname}
+      sections={navigationSections}
+      onNavigate={navigate}
+    />
+  );
   
     const topBarMarkup = (
       <TopBar
@@ -274,8 +260,19 @@ export default function MerchantPortalApp() {
       >
         <Routes>
           <Route index element={<MerchantPortalHome />} />
-          <Route path="quotes/*" element={<QuotesPage />} />
           <Route path="orders/*" element={<OrdersPage />} />
+          <Route path="products" element={<Page title="Products"><Card><Text>Products page</Text></Card></Page>} />
+          <Route path="customers" element={<CustomersPage />} />
+          <Route path="customers/companies" element={<CompaniesPage />} />
+          <Route path="customers/segments" element={<Page title="Segments"><Card><Text>Segments page</Text></Card></Page>} />
+          <Route path="marketing" element={<Page title="Marketing"><Card><Text>Marketing page</Text></Card></Page>} />
+          <Route path="discounts" element={<Page title="Discounts"><Card><Text>Discounts page</Text></Card></Page>} />
+          <Route path="content" element={<Page title="Content"><Card><Text>Content page</Text></Card></Page>} />
+          <Route path="markets" element={<Page title="Markets"><Card><Text>Markets page</Text></Card></Page>} />
+          <Route path="finance" element={<Page title="Finance"><Card><Text>Finance page</Text></Card></Page>} />
+          <Route path="analytics" element={<Page title="Analytics"><Card><Text>Analytics page</Text></Card></Page>} />
+          <Route path="settings" element={<Page title="Settings"><Card><Text>Settings page</Text></Card></Page>} />
+          <Route path="quotes/*" element={<QuotesPage />} />
           <Route path="users" element={<UsersPage />} />
           <Route path="company" element={<CompanyPage />} />
           <Route path="invoices" element={<InvoicesPage />} />
