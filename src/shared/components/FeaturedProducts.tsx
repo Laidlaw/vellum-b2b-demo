@@ -1,6 +1,7 @@
 import { Card, BlockStack, InlineStack, Text, Button, Badge, Grid } from '@shopify/polaris';
 import { Link } from 'react-router-dom';
 import type { Product } from '../types';
+import { IMAGE_GENERATORS } from '../../data/mock/constants';
 
 interface FeaturedProductsProps {
   products: Product[];
@@ -60,6 +61,12 @@ export function FeaturedProducts({
     return null;
   };
 
+  // Get product image URL from imageId
+  const getProductImageUrl = (imageId?: string) => {
+    if (!imageId) return '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    return IMAGE_GENERATORS.local(imageId);
+  };
+
   return (
     <Card>
       <BlockStack gap="500">
@@ -93,16 +100,18 @@ export function FeaturedProducts({
                       overflow: 'hidden'
                     }}>
                       <img
-                        src={product.imageUrl}
+                        src={getProductImageUrl(product.imageId)}
                         alt={product.name}
                         style={{
                           width: '100%',
                           height: '100%',
-                          objectFit: 'cover'
+                          objectFit: 'cover',
+                          filter: 'blur(2px) brightness(1.1) saturate(0.9)',
+                          opacity: 0.95
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = `https://via.placeholder.com/400x200/cccccc/666666?text=${encodeURIComponent(product.name)}`;
+                          target.src = '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
                         }}
                       />
                       {volumeDiscount && (

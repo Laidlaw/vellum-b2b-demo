@@ -21,6 +21,7 @@ import { useState, useMemo } from 'react';
 import type { Product } from '../types';
 import Rating from './Rating';
 import { formatDate } from '../utils';
+import { IMAGE_GENERATORS } from '../../data/mock/constants';
 
 interface ProductDetailsProps {
   product: Product;
@@ -29,11 +30,11 @@ interface ProductDetailsProps {
   onBack: () => void;
 }
 
-export function ProductDetails({ 
-  product, 
-  onAddToCart, 
-  onAddToQuote, 
-  onBack 
+export function ProductDetails({
+  product,
+  onAddToCart,
+  onAddToQuote,
+  onBack
 }: ProductDetailsProps) {
   const [quantity, setQuantity] = useState('1');
   const [selectedTab, setSelectedTab] = useState(0);
@@ -43,6 +44,12 @@ export function ProductDetails({
 
   const quantityNumber = parseInt(quantity) || 1;
   const maxQuantity = product.inStock ? product.stockQuantity : 0;
+
+  // Get product image URL from imageId
+  const getProductImageUrl = (imageId?: string) => {
+    if (!imageId) return '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    return IMAGE_GENERATORS.local(imageId);
+  };
 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -277,11 +284,16 @@ export function ProductDetails({
                   <Grid.Cell columnSpan={{ xs: 6, sm: 6, md: 6, lg: 6, xl: 6 }}>
                     <div style={{ position: 'relative' }}>
                       <Image
-                        source={product.imageUrl}
+                        source={getProductImageUrl(product.imageId)}
                         alt={product.name}
                         width="100%"
                         height="400px"
-                        style={{ objectFit: 'cover', borderRadius: '6px' }}
+                        style={{
+                          objectFit: 'cover',
+                          borderRadius: '6px',
+                          filter: 'blur(2px) brightness(1.1) saturate(0.9)',
+                          opacity: 0.95
+                        }}
                       />
                       {!product.inStock && (
                         <div style={{

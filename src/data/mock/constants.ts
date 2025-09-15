@@ -9,25 +9,63 @@
 // IMAGE & MEDIA CONFIGURATION
 // ============================================================================
 
-export type ImageProvider = 'unsplash' | 'picsum' | 'placeholder' | 'static';
+export type ImageProvider = 'unsplash' | 'picsum' | 'placeholder' | 'static' | 'local';
 
 export const IMAGE_CONFIG = {
-  provider: 'unsplash' as ImageProvider, // Use Unsplash for better product-specific images
-  fallbackProvider: 'picsum' as ImageProvider,
+  provider: 'local' as ImageProvider, // Use local assets for demo performance
+  fallbackProvider: 'placeholder' as ImageProvider,
   dimensions: { width: 400, height: 400 }
 } as const;
 
+// Local product images from src/assets/products/
+export const PRODUCT_IMAGES = {
+  'img-001': 'angle-grinder-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-002': 'circular-saw-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-003': 'come-along-cable-puller-professional-product-photo-white-background-studio-lighting-commercial-photo.jpg',
+  'img-004': 'composite-toe-safety-boots-professional-product-photo-white-background-studio-lighting-commercial-ph.jpg',
+  'img-005': 'cordless-drill-kit-professional-product-photo-white-background-studio-lighting-commercial-photograph.jpg',
+  'img-006': 'cut-resistant-work-gloves-heavy-duty-5-fingers-professional-product-photo-blurry-white-background-st.jpg',
+  'img-007': 'cut-resistant-work-gloves-think-5-fingers-professional-product-photo-white-background-studio-lightin.jpg',
+  'img-008': 'digital-multimeter-professional-product-photo-white-background-studio-lighting-commercial-photograph.jpg',
+  'img-009': 'exit-sign-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-010': 'fconveyor-belt-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-011': 'first-aid-kit-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-012': 'forklift-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-013': 'hammer-drill-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-014': 'hand-truck-heavy-duty-professional-product-photo-white-background-studio-lighting-commercial-photogr.jpg',
+  'img-015': 'hard-hat-with-led-light-professional-product-photo-white-background-studio-lighting-commercial-photo.jpg',
+  'img-016': 'high-visibility-safety-vest-professional-product-photo-white-background-studio-lighting-commercial-p.jpg',
+  'img-017': 'hydraulic-floor-jack-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg',
+  'img-018': 'impact-socket-set-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-019': 'industrial-wire-shelving-professional-product-photo-white-background-studio-lighting-commercial-phot.jpg',
+  'img-020': 'led-work-light-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-021': 'mig-welder-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-022': 'oscilloscope-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-023': 'platform-cart-heavy-duty-professional-product-photo-white-background-studio-lighting-commercial-phot.jpg',
+  'img-024': 'portable-generator-professional-product-photo-white-background-studio-lighting-commercial-photograph.jpg',
+  'img-025': 'pressure-washer-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-026': 'safety-bulky-eyewear-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg',
+  'img-027': 'steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg',
+  'img-028': 'torque-wrench-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
+  'img-029': 'welding-helmet-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg'
+} as const;
+
 export const IMAGE_GENERATORS = {
-  unsplash: (searchTerms: string) => 
+  local: (imageId: string) => {
+    const filename = PRODUCT_IMAGES[imageId as keyof typeof PRODUCT_IMAGES];
+    return filename ? `/src/assets/products/${filename}` : '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+  },
+
+  unsplash: (searchTerms: string) =>
     `https://source.unsplash.com/${IMAGE_CONFIG.dimensions.width}x${IMAGE_CONFIG.dimensions.height}/?${searchTerms}`,
-  
-  picsum: (productId: string) => 
+
+  picsum: (productId: string) =>
     `https://picsum.photos/${IMAGE_CONFIG.dimensions.width}/${IMAGE_CONFIG.dimensions.height}?random=${productId}`,
-  
-  placeholder: (productName: string) => 
+
+  placeholder: (productName: string) =>
     `https://via.placeholder.com/${IMAGE_CONFIG.dimensions.width}x${IMAGE_CONFIG.dimensions.height}/cccccc/666666?text=${encodeURIComponent(productName)}`,
-  
-  static: (category: string) => 
+
+  static: (category: string) =>
     `/images/products/${category.toLowerCase().replace(/\s+/g, '-')}.jpg`
 } as const;
 
@@ -71,155 +109,155 @@ export const PRODUCT_GENERATION = {
  */
 export const B2B_PRODUCTS = [
   // SAFETY EQUIPMENT - Personal Protective Equipment
-  { name: "Steel Toe Work Boots", brand: "Caterpillar", category: "Safety Equipment", image: "steel-toe-boots,construction", tags: ["PPE", "footwear"], certifications: ["ANSI Z41", "OSHA"] },
-  { name: "Composite Toe Safety Boots", brand: "Timberland Pro", category: "Safety Equipment", image: "safety-boots,composite", tags: ["PPE", "lightweight"] },
-  { name: "Waterproof Work Boots", brand: "Red Wing", category: "Safety Equipment", image: "waterproof-boots,industrial", tags: ["PPE", "waterproof"] },
-  { name: "High-Visibility Safety Vest", brand: "3M", category: "Safety Equipment", image: "hi-vis-vest,safety", tags: ["PPE", "visibility"], certifications: ["ANSI 107"] },
-  { name: "Reflective Traffic Vest", brand: "Portwest", category: "Safety Equipment", image: "traffic-vest,reflective", tags: ["PPE", "traffic"] },
-  { name: "Class 3 Safety Vest", brand: "Ergodyne", category: "Safety Equipment", image: "class3-vest,construction", tags: ["PPE", "high-visibility"] },
-  { name: "Hard Hat with LED Light", brand: "MSA Safety", category: "Safety Equipment", image: "hard-hat-led,construction", tags: ["PPE", "headwear"], certifications: ["ANSI Z89.1"] },
-  { name: "Electrical Hard Hat", brand: "Klein Tools", category: "Safety Equipment", image: "electrical-hardhat,safety", tags: ["PPE", "electrical"] },
-  { name: "Climbing Hard Hat", brand: "Petzl", category: "Safety Equipment", image: "climbing-helmet,industrial", tags: ["PPE", "height"] },
-  { name: "Bump Cap", brand: "Ergodyne", category: "Safety Equipment", image: "bump-cap,lightweight", tags: ["PPE", "comfort"] },
-  { name: "Cut-Resistant Work Gloves", brand: "Mechanix", category: "Safety Equipment", image: "cut-resistant-gloves,industrial", tags: ["PPE", "hand-protection"], certifications: ["ANSI/ISEA 105"] },
-  { name: "Chemical Resistant Gloves", brand: "Ansell", category: "Safety Equipment", image: "chemical-gloves,protection", tags: ["PPE", "chemical"] },
-  { name: "Welding Gloves", brand: "Lincoln Electric", category: "Safety Equipment", image: "welding-gloves,leather", tags: ["PPE", "welding"] },
-  { name: "Disposable Nitrile Gloves", brand: "Kimberly-Clark", category: "Safety Equipment", image: "nitrile-gloves,disposable", tags: ["PPE", "medical"] },
-  { name: "Safety Eyewear", brand: "Uvex", category: "Safety Equipment", image: "safety-glasses,clear", tags: ["PPE", "eye-protection"], certifications: ["ANSI Z87.1"] },
-  { name: "Wraparound Safety Glasses", brand: "Honeywell", category: "Safety Equipment", image: "wraparound-glasses,safety", tags: ["PPE", "coverage"] },
-  { name: "Safety Goggles", brand: "3M", category: "Safety Equipment", image: "safety-goggles,chemical", tags: ["PPE", "splash-protection"] },
-  { name: "Prescription Safety Glasses", brand: "Wiley X", category: "Safety Equipment", image: "prescription-safety,glasses", tags: ["PPE", "prescription"] },
-  { name: "Respirator Face Mask", brand: "3M", category: "Safety Equipment", image: "n95-respirator,face-mask", tags: ["PPE", "respiratory"], certifications: ["NIOSH N95"] },
-  { name: "Half-Face Respirator", brand: "Honeywell", category: "Safety Equipment", image: "half-face-respirator,industrial", tags: ["PPE", "filtration"] },
-  { name: "Full-Face Respirator", brand: "MSA Safety", category: "Safety Equipment", image: "full-face-respirator,chemical", tags: ["PPE", "complete-protection"] },
-  { name: "Dust Mask", brand: "Moldex", category: "Safety Equipment", image: "dust-mask,disposable", tags: ["PPE", "dust"] },
-  { name: "Safety Lockout Kit", brand: "Brady", category: "Safety Equipment", image: "lockout-tagout,safety", tags: ["LOTO", "maintenance"], certifications: ["OSHA 1910.147"] },
-  { name: "Lockout Padlocks", brand: "Master Lock", category: "Safety Equipment", image: "lockout-padlocks,safety", tags: ["LOTO", "security"] },
-  { name: "Electrical Lockout Kit", brand: "Panduit", category: "Safety Equipment", image: "electrical-lockout,kit", tags: ["LOTO", "electrical"] },
-  { name: "Fire Extinguisher", brand: "Amerex", category: "Safety Equipment", image: "fire-extinguisher,abc", tags: ["fire-safety", "emergency"], certifications: ["UL Listed"] },
-  { name: "Emergency Eyewash Station", brand: "Haws", category: "Safety Equipment", image: "eyewash-station,emergency", tags: ["emergency", "first-aid"] },
-  { name: "Spill Kit", brand: "New Pig", category: "Safety Equipment", image: "spill-kit,absorbent", tags: ["spill-response", "cleanup"] },
+  { name: "Steel Toe Work Boots", brand: "Caterpillar", category: "Safety Equipment", imageId: "img-027", tags: ["PPE", "footwear"], certifications: ["ANSI Z41", "OSHA"] },
+  { name: "Composite Toe Safety Boots", brand: "Timberland Pro", category: "Safety Equipment", imageId: "img-004", tags: ["PPE", "lightweight"] },
+  { name: "Waterproof Work Boots", brand: "Red Wing", category: "Safety Equipment", imageId: "img-027", tags: ["PPE", "waterproof"] },
+  { name: "High-Visibility Safety Vest", brand: "3M", category: "Safety Equipment", imageId: "img-016", tags: ["PPE", "visibility"], certifications: ["ANSI 107"] },
+  { name: "Reflective Traffic Vest", brand: "Portwest", category: "Safety Equipment", imageId: "img-016", tags: ["PPE", "traffic"] },
+  { name: "Class 3 Safety Vest", brand: "Ergodyne", category: "Safety Equipment", imageId: "img-016", tags: ["PPE", "high-visibility"] },
+  { name: "Hard Hat with LED Light", brand: "MSA Safety", category: "Safety Equipment", imageId: "img-015", tags: ["PPE", "headwear"], certifications: ["ANSI Z89.1"] },
+  { name: "Electrical Hard Hat", brand: "Klein Tools", category: "Safety Equipment", imageId: "img-015", tags: ["PPE", "electrical"] },
+  { name: "Climbing Hard Hat", brand: "Petzl", category: "Safety Equipment", imageId: "img-015", tags: ["PPE", "height"] },
+  { name: "Bump Cap", brand: "Ergodyne", category: "Safety Equipment", imageId: "img-015", tags: ["PPE", "comfort"] },
+  { name: "Cut-Resistant Work Gloves", brand: "Mechanix", category: "Safety Equipment", imageId: "img-006", tags: ["PPE", "hand-protection"], certifications: ["ANSI/ISEA 105"] },
+  { name: "Chemical Resistant Gloves", brand: "Ansell", category: "Safety Equipment", imageId: "img-007", tags: ["PPE", "chemical"] },
+  { name: "Welding Gloves", brand: "Lincoln Electric", category: "Safety Equipment", imageId: "img-007", tags: ["PPE", "welding"] },
+  { name: "Disposable Nitrile Gloves", brand: "Kimberly-Clark", category: "Safety Equipment", imageId: "img-006", tags: ["PPE", "medical"] },
+  { name: "Safety Eyewear", brand: "Uvex", category: "Safety Equipment", imageId: "img-026", tags: ["PPE", "eye-protection"], certifications: ["ANSI Z87.1"] },
+  { name: "Wraparound Safety Glasses", brand: "Honeywell", category: "Safety Equipment", imageId: "img-026", tags: ["PPE", "coverage"] },
+  { name: "Safety Goggles", brand: "3M", category: "Safety Equipment", imageId: "img-026", tags: ["PPE", "splash-protection"] },
+  { name: "Prescription Safety Glasses", brand: "Wiley X", category: "Safety Equipment", imageId: "img-026", tags: ["PPE", "prescription"] },
+  { name: "Respirator Face Mask", brand: "3M", category: "Safety Equipment", imageId: "img-026", tags: ["PPE", "respiratory"], certifications: ["NIOSH N95"] },
+  { name: "Half-Face Respirator", brand: "Honeywell", category: "Safety Equipment", imageId: "img-026", tags: ["PPE", "filtration"] },
+  { name: "Full-Face Respirator", brand: "MSA Safety", category: "Safety Equipment", imageId: "img-026", tags: ["PPE", "complete-protection"] },
+  { name: "Dust Mask", brand: "Moldex", category: "Safety Equipment", imageId: "img-026", tags: ["PPE", "dust"] },
+  { name: "Safety Lockout Kit", brand: "Brady", category: "Safety Equipment", imageId: "img-011", tags: ["LOTO", "maintenance"], certifications: ["OSHA 1910.147"] },
+  { name: "Lockout Padlocks", brand: "Master Lock", category: "Safety Equipment", imageId: "img-011", tags: ["LOTO", "security"] },
+  { name: "Electrical Lockout Kit", brand: "Panduit", category: "Safety Equipment", imageId: "img-011", tags: ["LOTO", "electrical"] },
+  { name: "Fire Extinguisher", brand: "Amerex", category: "Safety Equipment", imageId: "img-011", tags: ["fire-safety", "emergency"], certifications: ["UL Listed"] },
+  { name: "Emergency Eyewash Station", brand: "Haws", category: "Safety Equipment", imageId: "img-011", tags: ["emergency", "first-aid"] },
+  { name: "Spill Kit", brand: "New Pig", category: "Safety Equipment", imageId: "img-011", tags: ["spill-response", "cleanup"] },
 
   // POWER TOOLS - Professional Grade Equipment
-  { name: "Cordless Drill Kit", brand: "DeWalt", category: "Power Tools", image: "cordless-drill,dewalt", tags: ["cordless", "drilling"], certifications: ["UL Listed"] },
-  { name: "Hammer Drill", brand: "Milwaukee", category: "Power Tools", image: "hammer-drill,milwaukee", tags: ["masonry", "concrete"] },
-  { name: "Impact Driver", brand: "Makita", category: "Power Tools", image: "impact-driver,makita", tags: ["fastening", "high-torque"] },
-  { name: "Right Angle Drill", brand: "DeWalt", category: "Power Tools", image: "right-angle-drill,compact", tags: ["tight-spaces", "plumbing"] },
-  { name: "Circular Saw", brand: "Milwaukee", category: "Power Tools", image: "circular-saw,milwaukee", tags: ["cutting", "lumber"] },
-  { name: "Miter Saw", brand: "DeWalt", category: "Power Tools", image: "miter-saw,compound", tags: ["precision", "trim"] },
-  { name: "Table Saw", brand: "SawStop", category: "Power Tools", image: "table-saw,cabinet", tags: ["ripping", "safety"] },
-  { name: "Reciprocating Saw", brand: "Milwaukee", category: "Power Tools", image: "reciprocating-saw,sawzall", tags: ["demolition", "cutting"] },
-  { name: "Angle Grinder", brand: "Bosch", category: "Power Tools", image: "angle-grinder,bosch", tags: ["grinding", "metalwork"] },
-  { name: "Orbital Sander", brand: "Festool", category: "Power Tools", image: "orbital-sander,festool", tags: ["finishing", "dust-collection"] },
-  { name: "Belt Sander", brand: "Porter-Cable", category: "Power Tools", image: "belt-sander,portable", tags: ["surface-prep", "heavy-sanding"] },
-  { name: "Router", brand: "Bosch", category: "Power Tools", image: "router,wood", tags: ["woodworking", "edge-profiling"] },
-  { name: "Planer", brand: "DeWalt", category: "Power Tools", image: "electric-planer,dewalt", tags: ["surface", "dimensioning"] },
-  { name: "Nailer", brand: "Paslode", category: "Power Tools", image: "framing-nailer,pneumatic", tags: ["framing", "fastening"] },
-  { name: "Stapler", brand: "Senco", category: "Power Tools", image: "pneumatic-stapler,upholstery", tags: ["upholstery", "trim"] },
+  { name: "Cordless Drill Kit", brand: "DeWalt", category: "Power Tools", imageId: "img-005", tags: ["cordless", "drilling"], certifications: ["UL Listed"] },
+  { name: "Hammer Drill", brand: "Milwaukee", category: "Power Tools", imageId: "img-013", tags: ["masonry", "concrete"] },
+  { name: "Impact Driver", brand: "Makita", category: "Power Tools", imageId: "img-005", tags: ["fastening", "high-torque"] },
+  { name: "Right Angle Drill", brand: "DeWalt", category: "Power Tools", imageId: "img-005", tags: ["tight-spaces", "plumbing"] },
+  { name: "Circular Saw", brand: "Milwaukee", category: "Power Tools", imageId: "img-002", tags: ["cutting", "lumber"] },
+  { name: "Miter Saw", brand: "DeWalt", category: "Power Tools", imageId: "img-002", tags: ["precision", "trim"] },
+  { name: "Table Saw", brand: "SawStop", category: "Power Tools", imageId: "img-002", tags: ["ripping", "safety"] },
+  { name: "Reciprocating Saw", brand: "Milwaukee", category: "Power Tools", imageId: "img-002", tags: ["demolition", "cutting"] },
+  { name: "Angle Grinder", brand: "Bosch", category: "Power Tools", imageId: "img-001", tags: ["grinding", "metalwork"] },
+  { name: "Orbital Sander", brand: "Festool", category: "Power Tools", imageId: "img-001", tags: ["finishing", "dust-collection"] },
+  { name: "Belt Sander", brand: "Porter-Cable", category: "Power Tools", imageId: "img-001", tags: ["surface-prep", "heavy-sanding"] },
+  { name: "Router", brand: "Bosch", category: "Power Tools", imageId: "img-001", tags: ["woodworking", "edge-profiling"] },
+  { name: "Planer", brand: "DeWalt", category: "Power Tools", imageId: "img-001", tags: ["surface", "dimensioning"] },
+  { name: "Nailer", brand: "Paslode", category: "Power Tools", imageId: "img-005", tags: ["framing", "fastening"] },
+  { name: "Stapler", brand: "Senco", category: "Power Tools", imageId: "img-005", tags: ["upholstery", "trim"] },
 
   // HAND TOOLS - Manual Precision Tools
-  { name: "Impact Socket Set", brand: "Craftsman", category: "Hand Tools", image: "impact-socket-set,chrome", tags: ["automotive", "mechanics"] },
-  { name: "Combination Wrench Set", brand: "Snap-on", category: "Hand Tools", image: "combination-wrench,set", tags: ["mechanic", "maintenance"] },
-  { name: "Torque Wrench", brand: "CDI", category: "Hand Tools", image: "torque-wrench,calibrated", tags: ["precision", "calibrated"] },
-  { name: "Ratchet Set", brand: "GearWrench", category: "Hand Tools", image: "ratchet-set,120-tooth", tags: ["mechanics", "fine-tooth"] },
-  { name: "Screwdriver Set", brand: "Klein Tools", category: "Hand Tools", image: "screwdriver-set,insulated", tags: ["electrical", "precision"] },
-  { name: "Hex Key Set", brand: "Bondhus", category: "Hand Tools", image: "hex-key-set,ball-end", tags: ["assembly", "machinery"] },
-  { name: "Pliers Set", brand: "Knipex", category: "Hand Tools", image: "pliers-set,german", tags: ["gripping", "cutting"] },
-  { name: "Wire Strippers", brand: "Klein Tools", category: "Hand Tools", image: "wire-strippers,electrical", tags: ["electrical", "wire-prep"] },
-  { name: "Utility Knife", brand: "Stanley", category: "Hand Tools", image: "utility-knife,retractable", tags: ["cutting", "general-purpose"] },
-  { name: "Measuring Tape", brand: "Stanley", category: "Hand Tools", image: "measuring-tape,25ft", tags: ["measuring", "layout"] },
-  { name: "Level Set", brand: "Stabila", category: "Hand Tools", image: "spirit-level,aluminum", tags: ["leveling", "construction"] },
-  { name: "Square", brand: "Starrett", category: "Hand Tools", image: "combination-square,precision", tags: ["measuring", "marking"] },
-  { name: "Caliper", brand: "Mitutoyo", category: "Hand Tools", image: "digital-caliper,precision", tags: ["measuring", "machining"] },
-  { name: "Micrometer", brand: "Starrett", category: "Hand Tools", image: "outside-micrometer,precision", tags: ["precision", "machining"] },
+  { name: "Impact Socket Set", brand: "Craftsman", category: "Hand Tools", imageId: "img-018", tags: ["automotive", "mechanics"] },
+  { name: "Combination Wrench Set", brand: "Snap-on", category: "Hand Tools", imageId: "img-028", tags: ["mechanic", "maintenance"] },
+  { name: "Torque Wrench", brand: "CDI", category: "Hand Tools", imageId: "img-028", tags: ["precision", "calibrated"] },
+  { name: "Ratchet Set", brand: "GearWrench", category: "Hand Tools", imageId: "img-018", tags: ["mechanics", "fine-tooth"] },
+  { name: "Screwdriver Set", brand: "Klein Tools", category: "Hand Tools", imageId: "img-018", tags: ["electrical", "precision"] },
+  { name: "Hex Key Set", brand: "Bondhus", category: "Hand Tools", imageId: "img-018", tags: ["assembly", "machinery"] },
+  { name: "Pliers Set", brand: "Knipex", category: "Hand Tools", imageId: "img-018", tags: ["gripping", "cutting"] },
+  { name: "Wire Strippers", brand: "Klein Tools", category: "Hand Tools", imageId: "img-018", tags: ["electrical", "wire-prep"] },
+  { name: "Utility Knife", brand: "Stanley", category: "Hand Tools", imageId: "img-018", tags: ["cutting", "general-purpose"] },
+  { name: "Measuring Tape", brand: "Stanley", category: "Hand Tools", imageId: "img-018", tags: ["measuring", "layout"] },
+  { name: "Level Set", brand: "Stabila", category: "Hand Tools", imageId: "img-018", tags: ["leveling", "construction"] },
+  { name: "Square", brand: "Starrett", category: "Hand Tools", imageId: "img-018", tags: ["measuring", "marking"] },
+  { name: "Caliper", brand: "Mitutoyo", category: "Hand Tools", imageId: "img-018", tags: ["measuring", "machining"] },
+  { name: "Micrometer", brand: "Starrett", category: "Hand Tools", imageId: "img-018", tags: ["precision", "machining"] },
 
   // TEST EQUIPMENT - Electrical & Diagnostic
-  { name: "Digital Multimeter", brand: "Fluke", category: "Test Equipment", image: "digital-multimeter,fluke", tags: ["electrical", "testing"], certifications: ["CAT III", "CAT IV"] },
-  { name: "Clamp Meter", brand: "Klein Tools", category: "Test Equipment", image: "clamp-meter,current", tags: ["electrical", "current"] },
-  { name: "Oscilloscope", brand: "Tektronix", category: "Test Equipment", image: "oscilloscope,digital", tags: ["electronics", "waveform"] },
-  { name: "Function Generator", brand: "Keysight", category: "Test Equipment", image: "function-generator,benchtop", tags: ["signal", "testing"] },
-  { name: "Power Supply", brand: "BK Precision", category: "Test Equipment", image: "power-supply,variable", tags: ["electronics", "bench"] },
-  { name: "Insulation Tester", brand: "Megger", category: "Test Equipment", image: "insulation-tester,megger", tags: ["electrical", "insulation"] },
-  { name: "Earth Ground Tester", brand: "AEMC", category: "Test Equipment", image: "ground-tester,electrical", tags: ["grounding", "safety"] },
-  { name: "Thermal Imaging Camera", brand: "FLIR", category: "Test Equipment", image: "thermal-camera,infrared", tags: ["thermal", "diagnostics"] },
-  { name: "Sound Level Meter", brand: "Extech", category: "Test Equipment", image: "sound-meter,decibel", tags: ["noise", "environmental"] },
-  { name: "Vibration Meter", brand: "PCE Instruments", category: "Test Equipment", image: "vibration-meter,analysis", tags: ["mechanical", "analysis"] },
+  { name: "Digital Multimeter", brand: "Fluke", category: "Test Equipment", imageId: "img-008", tags: ["electrical", "testing"], certifications: ["CAT III", "CAT IV"] },
+  { name: "Clamp Meter", brand: "Klein Tools", category: "Test Equipment", imageId: "img-008", tags: ["electrical", "current"] },
+  { name: "Oscilloscope", brand: "Tektronix", category: "Test Equipment", imageId: "img-022", tags: ["electronics", "waveform"] },
+  { name: "Function Generator", brand: "Keysight", category: "Test Equipment", imageId: "img-022", tags: ["signal", "testing"] },
+  { name: "Power Supply", brand: "BK Precision", category: "Test Equipment", imageId: "img-022", tags: ["electronics", "bench"] },
+  { name: "Insulation Tester", brand: "Megger", category: "Test Equipment", imageId: "img-008", tags: ["electrical", "insulation"] },
+  { name: "Earth Ground Tester", brand: "AEMC", category: "Test Equipment", imageId: "img-008", tags: ["grounding", "safety"] },
+  { name: "Thermal Imaging Camera", brand: "FLIR", category: "Test Equipment", imageId: "img-008", tags: ["thermal", "diagnostics"] },
+  { name: "Sound Level Meter", brand: "Extech", category: "Test Equipment", imageId: "img-008", tags: ["noise", "environmental"] },
+  { name: "Vibration Meter", brand: "PCE Instruments", category: "Test Equipment", imageId: "img-008", tags: ["mechanical", "analysis"] },
 
   // LIGHTING - Industrial & Commercial Solutions
-  { name: "LED Work Light", brand: "Milwaukee", category: "Lighting", image: "led-work-light,portable", tags: ["portable", "LED"] },
-  { name: "Flood Light", brand: "Cooper Lighting", category: "Lighting", image: "led-flood-light,industrial", tags: ["outdoor", "area-lighting"] },
-  { name: "High Bay LED", brand: "Philips", category: "Lighting", image: "high-bay-led,warehouse", tags: ["warehouse", "industrial"] },
-  { name: "Emergency Light", brand: "Dual-Lite", category: "Lighting", image: "emergency-light,backup", tags: ["emergency", "safety"] },
-  { name: "Exit Sign", brand: "Hubbell", category: "Lighting", image: "exit-sign-led,emergency", tags: ["exit", "code-compliance"] },
-  { name: "Task Light", brand: "Luxo", category: "Lighting", image: "task-light,adjustable", tags: ["precision", "workbench"] },
-  { name: "Explosion Proof Light", brand: "Appleton", category: "Lighting", image: "explosion-proof-light,hazardous", tags: ["hazardous", "certified"] },
-  { name: "Solar Light", brand: "Solar Goes Green", category: "Lighting", image: "solar-light,outdoor", tags: ["solar", "sustainable"] },
+  { name: "LED Work Light", brand: "Milwaukee", category: "Lighting", imageId: "img-020", tags: ["portable", "LED"] },
+  { name: "Flood Light", brand: "Cooper Lighting", category: "Lighting", imageId: "img-020", tags: ["outdoor", "area-lighting"] },
+  { name: "High Bay LED", brand: "Philips", category: "Lighting", imageId: "img-020", tags: ["warehouse", "industrial"] },
+  { name: "Emergency Light", brand: "Dual-Lite", category: "Lighting", imageId: "img-020", tags: ["emergency", "safety"] },
+  { name: "Exit Sign", brand: "Hubbell", category: "Lighting", imageId: "img-009", tags: ["exit", "code-compliance"] },
+  { name: "Task Light", brand: "Luxo", category: "Lighting", imageId: "img-020", tags: ["precision", "workbench"] },
+  { name: "Explosion Proof Light", brand: "Appleton", category: "Lighting", imageId: "img-020", tags: ["hazardous", "certified"] },
+  { name: "Solar Light", brand: "Solar Goes Green", category: "Lighting", imageId: "img-020", tags: ["solar", "sustainable"] },
 
   // WELDING - Metal Fabrication Equipment
-  { name: "Welding Helmet", brand: "Lincoln Electric", category: "Welding", image: "welding-helmet,auto-darkening", tags: ["PPE", "auto-darkening"], certifications: ["ANSI Z87.1"] },
-  { name: "MIG Welder", brand: "Miller", category: "Welding", image: "mig-welder,miller", tags: ["wire-feed", "fabrication"] },
-  { name: "TIG Welder", brand: "Lincoln Electric", category: "Welding", image: "tig-welder,precision", tags: ["precision", "aluminum"] },
-  { name: "Stick Welder", brand: "ESAB", category: "Welding", image: "stick-welder,arc", tags: ["arc-welding", "heavy-duty"] },
-  { name: "Cutting Torch Set", brand: "Victor", category: "Welding", image: "cutting-torch,oxy-acetylene", tags: ["cutting", "flame"] },
-  { name: "Plasma Cutter", brand: "Hypertherm", category: "Welding", image: "plasma-cutter,cnc", tags: ["precision", "automated"] },
-  { name: "Welding Table", brand: "Strong Hand Tools", category: "Welding", image: "welding-table,modular", tags: ["fixture", "fabrication"] },
-  { name: "Welding Cart", brand: "Lincoln Electric", category: "Welding", image: "welding-cart,mobile", tags: ["mobile", "storage"] },
-  { name: "Welding Gloves", brand: "Tillman", category: "Welding", image: "welding-gloves,leather", tags: ["PPE", "heat-resistant"] },
+  { name: "Welding Helmet", brand: "Lincoln Electric", category: "Welding", imageId: "img-029", tags: ["PPE", "auto-darkening"], certifications: ["ANSI Z87.1"] },
+  { name: "MIG Welder", brand: "Miller", category: "Welding", imageId: "img-021", tags: ["wire-feed", "fabrication"] },
+  { name: "TIG Welder", brand: "Lincoln Electric", category: "Welding", imageId: "img-021", tags: ["precision", "aluminum"] },
+  { name: "Stick Welder", brand: "ESAB", category: "Welding", imageId: "img-021", tags: ["arc-welding", "heavy-duty"] },
+  { name: "Cutting Torch Set", brand: "Victor", category: "Welding", imageId: "img-021", tags: ["cutting", "flame"] },
+  { name: "Plasma Cutter", brand: "Hypertherm", category: "Welding", imageId: "img-021", tags: ["precision", "automated"] },
+  { name: "Welding Table", brand: "Strong Hand Tools", category: "Welding", imageId: "img-021", tags: ["fixture", "fabrication"] },
+  { name: "Welding Cart", brand: "Lincoln Electric", category: "Welding", imageId: "img-021", tags: ["mobile", "storage"] },
+  { name: "Welding Gloves", brand: "Tillman", category: "Welding", imageId: "img-007", tags: ["PPE", "heat-resistant"] },
 
   // AUTOMOTIVE - Professional Auto Tools
-  { name: "Hydraulic Floor Jack", brand: "Blackhawk", category: "Automotive", image: "floor-jack-hydraulic,automotive", tags: ["lifting", "automotive"] },
-  { name: "Jack Stands", brand: "Torin", category: "Automotive", image: "jack-stands,safety", tags: ["support", "safety"] },
-  { name: "Engine Hoist", brand: "OTC", category: "Automotive", image: "engine-hoist,hydraulic", tags: ["engine", "removal"] },
-  { name: "Transmission Jack", brand: "Ranger", category: "Automotive", image: "transmission-jack,hydraulic", tags: ["transmission", "heavy-duty"] },
-  { name: "Creeper", brand: "Whiteside", category: "Automotive", image: "mechanic-creeper,rolling", tags: ["mobility", "comfort"] },
-  { name: "Scan Tool", brand: "Autel", category: "Automotive", image: "obd2-scanner,diagnostic", tags: ["diagnostics", "electronic"] },
-  { name: "Battery Tester", brand: "Midtronics", category: "Automotive", image: "battery-tester,automotive", tags: ["battery", "electrical"] },
-  { name: "Tire Pressure Gauge", brand: "JACO", category: "Automotive", image: "tire-pressure-gauge,digital", tags: ["tire", "maintenance"] },
-  { name: "Impact Wrench", brand: "Ingersoll Rand", category: "Automotive", image: "impact-wrench,pneumatic", tags: ["lug-nuts", "high-torque"] },
+  { name: "Hydraulic Floor Jack", brand: "Blackhawk", category: "Automotive", imageId: "img-017", tags: ["lifting", "automotive"] },
+  { name: "Jack Stands", brand: "Torin", category: "Automotive", imageId: "img-017", tags: ["support", "safety"] },
+  { name: "Engine Hoist", brand: "OTC", category: "Automotive", imageId: "img-017", tags: ["engine", "removal"] },
+  { name: "Transmission Jack", brand: "Ranger", category: "Automotive", imageId: "img-017", tags: ["transmission", "heavy-duty"] },
+  { name: "Creeper", brand: "Whiteside", category: "Automotive", imageId: "img-017", tags: ["mobility", "comfort"] },
+  { name: "Scan Tool", brand: "Autel", category: "Automotive", imageId: "img-008", tags: ["diagnostics", "electronic"] },
+  { name: "Battery Tester", brand: "Midtronics", category: "Automotive", imageId: "img-008", tags: ["battery", "electrical"] },
+  { name: "Tire Pressure Gauge", brand: "JACO", category: "Automotive", imageId: "img-008", tags: ["tire", "maintenance"] },
+  { name: "Impact Wrench", brand: "Ingersoll Rand", category: "Automotive", imageId: "img-005", tags: ["lug-nuts", "high-torque"] },
 
   // STORAGE - Organization & Warehouse Solutions
-  { name: "Industrial Wire Shelving", brand: "Metro", category: "Storage", image: "wire-shelving,stainless", tags: ["warehouse", "adjustable"] },
-  { name: "Tool Storage Cabinet", brand: "Snap-on", category: "Storage", image: "tool-cabinet,mobile", tags: ["organization", "mobile"] },
-  { name: "Parts Bins", brand: "Akro-Mils", category: "Storage", image: "parts-bins,plastic", tags: ["small-parts", "organizing"] },
-  { name: "Mobile Cart", brand: "Rubbermaid", category: "Storage", image: "utility-cart,mobile", tags: ["transport", "utility"] },
-  { name: "Pallet Rack", brand: "Ridg-U-Rak", category: "Storage", image: "pallet-rack,warehouse", tags: ["warehouse", "heavy-duty"] },
-  { name: "Locker System", brand: "Penco", category: "Storage", image: "metal-lockers,industrial", tags: ["security", "personal"] },
-  { name: "Storage Bins", brand: "Quantum Storage", category: "Storage", image: "storage-bins,stackable", tags: ["organizing", "stackable"] },
-  { name: "Workbench", brand: "Global Industrial", category: "Storage", image: "workbench-steel,industrial", tags: ["work-surface", "heavy-duty"] },
+  { name: "Industrial Wire Shelving", brand: "Metro", category: "Storage", imageId: "img-019", tags: ["warehouse", "adjustable"] },
+  { name: "Tool Storage Cabinet", brand: "Snap-on", category: "Storage", imageId: "img-019", tags: ["organization", "mobile"] },
+  { name: "Parts Bins", brand: "Akro-Mils", category: "Storage", imageId: "img-019", tags: ["small-parts", "organizing"] },
+  { name: "Mobile Cart", brand: "Rubbermaid", category: "Storage", imageId: "img-023", tags: ["transport", "utility"] },
+  { name: "Pallet Rack", brand: "Ridg-U-Rak", category: "Storage", imageId: "img-019", tags: ["warehouse", "heavy-duty"] },
+  { name: "Locker System", brand: "Penco", category: "Storage", imageId: "img-019", tags: ["security", "personal"] },
+  { name: "Storage Bins", brand: "Quantum Storage", category: "Storage", imageId: "img-019", tags: ["organizing", "stackable"] },
+  { name: "Workbench", brand: "Global Industrial", category: "Storage", imageId: "img-019", tags: ["work-surface", "heavy-duty"] },
 
   // POWER EQUIPMENT - Generators & Compressors
-  { name: "Portable Generator", brand: "Honda", category: "Power Equipment", image: "portable-generator,honda", tags: ["backup-power", "portable"] },
-  { name: "Standby Generator", brand: "Generac", category: "Power Equipment", image: "standby-generator,natural-gas", tags: ["automatic", "whole-house"] },
-  { name: "Air Compressor", brand: "Ingersoll Rand", category: "Power Equipment", image: "air-compressor,rotary-screw", tags: ["compressed-air", "industrial"] },
-  { name: "Pressure Washer", brand: "Simpson", category: "Power Equipment", image: "pressure-washer,commercial", tags: ["cleaning", "high-pressure"] },
-  { name: "Shop Vacuum", brand: "Shop-Vac", category: "Power Equipment", image: "shop-vacuum,wet-dry", tags: ["cleanup", "debris"] },
-  { name: "Dust Collector", brand: "Jet", category: "Power Equipment", image: "dust-collector,cyclone", tags: ["dust-collection", "woodworking"] },
-  { name: "Welder Generator", brand: "Miller", category: "Power Equipment", image: "welder-generator,engine-driven", tags: ["welding", "portable-power"] },
+  { name: "Portable Generator", brand: "Honda", category: "Power Equipment", imageId: "img-024", tags: ["backup-power", "portable"] },
+  { name: "Standby Generator", brand: "Generac", category: "Power Equipment", imageId: "img-024", tags: ["automatic", "whole-house"] },
+  { name: "Air Compressor", brand: "Ingersoll Rand", category: "Power Equipment", imageId: "img-024", tags: ["compressed-air", "industrial"] },
+  { name: "Pressure Washer", brand: "Simpson", category: "Power Equipment", imageId: "img-025", tags: ["cleaning", "high-pressure"] },
+  { name: "Shop Vacuum", brand: "Shop-Vac", category: "Power Equipment", imageId: "img-025", tags: ["cleanup", "debris"] },
+  { name: "Dust Collector", brand: "Jet", category: "Power Equipment", imageId: "img-025", tags: ["dust-collection", "woodworking"] },
+  { name: "Welder Generator", brand: "Miller", category: "Power Equipment", imageId: "img-024", tags: ["welding", "portable-power"] },
 
   // MEDICAL - First Aid & Safety
-  { name: "First Aid Kit", brand: "Johnson & Johnson", category: "Medical", image: "first-aid-kit,industrial", tags: ["emergency", "workplace"], certifications: ["OSHA Compliant"] },
-  { name: "AED Defibrillator", brand: "Philips", category: "Medical", image: "aed-defibrillator,automated", tags: ["cardiac", "emergency"] },
-  { name: "Stretcher", brand: "Ferno", category: "Medical", image: "emergency-stretcher,collapsible", tags: ["transport", "emergency"] },
-  { name: "Oxygen Kit", brand: "Allied Healthcare", category: "Medical", image: "oxygen-kit-portable,emergency", tags: ["respiratory", "emergency"] },
-  { name: "Burn Kit", brand: "North Safety", category: "Medical", image: "burn-treatment-kit,emergency", tags: ["burn-care", "treatment"] },
+  { name: "First Aid Kit", brand: "Johnson & Johnson", category: "Medical", imageId: "img-011", tags: ["emergency", "workplace"], certifications: ["OSHA Compliant"] },
+  { name: "AED Defibrillator", brand: "Philips", category: "Medical", imageId: "img-011", tags: ["cardiac", "emergency"] },
+  { name: "Stretcher", brand: "Ferno", category: "Medical", imageId: "img-011", tags: ["transport", "emergency"] },
+  { name: "Oxygen Kit", brand: "Allied Healthcare", category: "Medical", imageId: "img-011", tags: ["respiratory", "emergency"] },
+  { name: "Burn Kit", brand: "North Safety", category: "Medical", imageId: "img-011", tags: ["burn-care", "treatment"] },
 
   // RIGGING - Heavy Lifting & Material Handling
-  { name: "Lifting Straps", brand: "Crosby", category: "Rigging", image: "lifting-slings,polyester", tags: ["lifting", "soft-sling"], certifications: ["ASME B30.9"] },
-  { name: "Chain Hoist", brand: "CM Columbus McKinnon", category: "Rigging", image: "chain-hoist,manual", tags: ["manual", "chain"] },
-  { name: "Wire Rope", brand: "WireCo WorldGroup", category: "Rigging", image: "wire-rope-galvanized,cable", tags: ["cable", "galvanized"] },
-  { name: "Shackles", brand: "Crosby", category: "Rigging", image: "shackles-stainless,marine", tags: ["connecting", "stainless"] },
-  { name: "Lifting Magnets", brand: "Walker Magnetics", category: "Rigging", image: "lifting-magnet,permanent", tags: ["magnetic", "steel"] },
-  { name: "Come Along", brand: "Maasdam", category: "Rigging", image: "come-along,cable-puller", tags: ["pulling", "portable"] },
-  { name: "Load Block", brand: "Harrington", category: "Rigging", image: "load-block,snatch", tags: ["mechanical-advantage", "pulling"] },
+  { name: "Lifting Straps", brand: "Crosby", category: "Rigging", imageId: "img-003", tags: ["lifting", "soft-sling"], certifications: ["ASME B30.9"] },
+  { name: "Chain Hoist", brand: "CM Columbus McKinnon", category: "Rigging", imageId: "img-003", tags: ["manual", "chain"] },
+  { name: "Wire Rope", brand: "WireCo WorldGroup", category: "Rigging", imageId: "img-003", tags: ["cable", "galvanized"] },
+  { name: "Shackles", brand: "Crosby", category: "Rigging", imageId: "img-003", tags: ["connecting", "stainless"] },
+  { name: "Lifting Magnets", brand: "Walker Magnetics", category: "Rigging", imageId: "img-003", tags: ["magnetic", "steel"] },
+  { name: "Come Along", brand: "Maasdam", category: "Rigging", imageId: "img-003", tags: ["pulling", "portable"] },
+  { name: "Load Block", brand: "Harrington", category: "Rigging", imageId: "img-003", tags: ["mechanical-advantage", "pulling"] },
 
   // MATERIAL HANDLING - Forklifts & Conveyors
-  { name: "Pallet Jack", brand: "Crown", category: "Material Handling", image: "pallet-jack,manual", tags: ["pallet", "manual"] },
-  { name: "Electric Pallet Jack", brand: "Raymond", category: "Material Handling", image: "electric-pallet-jack,powered", tags: ["electric", "powered"] },
-  { name: "Forklift", brand: "Toyota", category: "Material Handling", image: "forklift-propane,industrial", tags: ["lifting", "propane"] },
-  { name: "Hand Truck", brand: "Magliner", category: "Material Handling", image: "hand-truck-aluminum,convertible", tags: ["transport", "convertible"] },
-  { name: "Platform Cart", brand: "Rubbermaid", category: "Material Handling", image: "platform-cart,heavy-duty", tags: ["platform", "transport"] },
-  { name: "Drum Dolly", brand: "Morse", category: "Material Handling", image: "drum-dolly,55-gallon", tags: ["drum", "mobility"] },
-  { name: "Conveyor Belt", brand: "Dorner", category: "Material Handling", image: "belt-conveyor,modular", tags: ["automation", "transport"] }
+  { name: "Pallet Jack", brand: "Crown", category: "Material Handling", imageId: "img-012", tags: ["pallet", "manual"] },
+  { name: "Electric Pallet Jack", brand: "Raymond", category: "Material Handling", imageId: "img-012", tags: ["electric", "powered"] },
+  { name: "Forklift", brand: "Toyota", category: "Material Handling", imageId: "img-012", tags: ["lifting", "propane"] },
+  { name: "Hand Truck", brand: "Magliner", category: "Material Handling", imageId: "img-014", tags: ["transport", "convertible"] },
+  { name: "Platform Cart", brand: "Rubbermaid", category: "Material Handling", imageId: "img-023", tags: ["platform", "transport"] },
+  { name: "Drum Dolly", brand: "Morse", category: "Material Handling", imageId: "img-014", tags: ["drum", "mobility"] },
+  { name: "Conveyor Belt", brand: "Dorner", category: "Material Handling", imageId: "img-010", tags: ["automation", "transport"] }
 ] as const;
 
 /**

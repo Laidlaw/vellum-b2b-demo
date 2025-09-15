@@ -112,7 +112,7 @@ export function generateStyledProduct(categoryId?: string): Product {
   const productTemplate = faker.helpers.arrayElement(B2B_PRODUCTS);
   const basePrice = faker.number.float(PRODUCT_GENERATION.pricing);
   const productId = faker.string.uuid();
-  
+
   return {
     id: productId,
     name: productTemplate.name,
@@ -126,16 +126,17 @@ export function generateStyledProduct(categoryId?: string): Product {
     category: categoryId || productTemplate.category, // Use the product template's category instead of UUID
     basePrice,
     imageUrl: getProductImage(productTemplate.name, productTemplate.category, productId),
+    imageId: 'imageId' in productTemplate ? productTemplate.imageId : undefined, // Add imageId from template
     inStock: faker.datatype.boolean(PRODUCT_GENERATION.stock.probabilityInStock),
     stockQuantity: faker.number.int({ min: 0, max: PRODUCT_GENERATION.stock.maxQuantity }),
-    
+
     // Enhanced product features
     isFeatured: faker.datatype.boolean(PRODUCT_GENERATION.featuredProbability),
     isPremium: faker.datatype.boolean(PRODUCT_GENERATION.premiumProbability),
     isBestseller: faker.datatype.boolean(PRODUCT_GENERATION.bestsellerProbability),
     isNewProduct: faker.datatype.boolean(PRODUCT_GENERATION.newProductProbability),
     isSeasonalPromo: faker.datatype.boolean(PRODUCT_GENERATION.seasonalPromoProbability),
-    
+
     // Add certifications and tags from the template
     certifications: 'certifications' in productTemplate ? productTemplate.certifications : undefined,
     tags: 'tags' in productTemplate ? productTemplate.tags : []

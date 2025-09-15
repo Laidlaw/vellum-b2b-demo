@@ -39,6 +39,7 @@ export interface Product {
   category: string;
   basePrice: number;
   imageUrl: string;
+  imageId?: string; // New field for local image mapping
   inStock: boolean;
   stockQuantity: number;
   isFeatured?: boolean;

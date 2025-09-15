@@ -1,9 +1,9 @@
-import { 
-  Card, 
-  BlockStack, 
-  InlineStack, 
-  Text, 
-  Button, 
+import {
+  Card,
+  BlockStack,
+  InlineStack,
+  Text,
+  Button,
   Select,
   Pagination,
   EmptyState,
@@ -16,6 +16,7 @@ import {
 import { useState, useMemo } from 'react';
 import type { Product, ProductCategory } from '../types';
 import { ProductCard } from './ProductCard';
+import { IMAGE_GENERATORS } from '../../data/mock/constants';
 
 interface ProductCatalogProps {
   products: Product[];
@@ -65,6 +66,8 @@ export function ProductCatalog({
   });
 
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [localCurrentPage, setLocalCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(12); // Show 12 items per page
 
   // Extract unique brands from products
   const brands = useMemo(() => {
@@ -81,7 +84,7 @@ export function ProductCatalog({
       // Search query filter
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           product.name.toLowerCase().includes(query) ||
           product.brand.toLowerCase().includes(query) ||
           product.model.toLowerCase().includes(query) ||
@@ -119,8 +122,18 @@ export function ProductCatalog({
     });
   }, [products, filters]);
 
+  // Paginate filtered products
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (localCurrentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredProducts.slice(startIndex, endIndex);
+  }, [filteredProducts, localCurrentPage, itemsPerPage]);
+
+  const totalLocalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
   const handleFiltersChange = (newFilters: Partial<FilterState>) => {
     setFilters(prev => ({ ...prev, ...newFilters }));
+    setLocalCurrentPage(1); // Reset to first page when filters change
   };
 
   const clearAllFilters = () => {
@@ -131,6 +144,13 @@ export function ProductCatalog({
       priceRange: '',
       inStockOnly: false
     });
+    setLocalCurrentPage(1); // Reset to first page when clearing filters
+  };
+
+  // Get product image URL from imageId
+  const getProductImageUrl = (imageId?: string) => {
+    if (!imageId) return '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    return IMAGE_GENERATORS.local(imageId);
   };
 
   const appliedFilters = [];
@@ -284,7 +304,7 @@ export function ProductCatalog({
 
   const resultsMarkup = viewMode === 'grid' ? (
     <Grid>
-      {filteredProducts.map((product) => (
+      {paginatedProducts.map((product) => (
         <Grid.Cell key={product.id} columnSpan={{ xs: 6, sm: 4, md: 4, lg: 3, xl: 3 }}>
           <ProductCard
             product={product}
@@ -298,15 +318,20 @@ export function ProductCatalog({
   ) : (
     <ResourceList
       resourceName={{ singular: 'product', plural: 'products' }}
-      items={filteredProducts}
+      items={paginatedProducts}
       renderItem={(product) => {
         const media = (
           <img
             alt={product.name}
             width="80"
             height="80"
-            style={{ objectFit: 'cover', borderRadius: '4px' }}
-            src={product.imageUrl}
+            style={{
+              objectFit: 'cover',
+              borderRadius: '4px',
+              filter: 'blur(1px) brightness(1.1) saturate(0.9)',
+              opacity: 0.95
+            }}
+            src={getProductImageUrl(product.imageId)}
           />
         );
 
@@ -361,7 +386,8 @@ export function ProductCatalog({
         <BlockStack gap="400">
           <InlineStack align="space-between" blockAlign="center">
             <Text as="p" variant="bodySm" tone="subdued">
-              Showing {filteredProducts.length} of {products.length} products
+              Showing {((localCurrentPage - 1) * itemsPerPage) + 1}-{Math.min(localCurrentPage * itemsPerPage, filteredProducts.length)} of {filteredProducts.length} products
+              {filteredProducts.length !== products.length && ` (${products.length} total)`}
             </Text>
             <InlineStack gap="200">
               <Button
@@ -385,14 +411,14 @@ export function ProductCatalog({
 
           {resultsMarkup}
 
-          {totalPages > 1 && onPageChange && (
+          {(totalLocalPages > 1 || (totalPages > 1 && onPageChange)) && (
             <InlineStack align="center">
               <Pagination
-                label={`Page ${currentPage} of ${totalPages}`}
-                hasPrevious={currentPage > 1}
-                onPrevious={() => onPageChange(currentPage - 1)}
-                hasNext={currentPage < totalPages}
-                onNext={() => onPageChange(currentPage + 1)}
+                label={`Page ${totalLocalPages > 1 ? localCurrentPage : currentPage} of ${totalLocalPages > 1 ? totalLocalPages : totalPages}`}
+                hasPrevious={totalLocalPages > 1 ? localCurrentPage > 1 : currentPage > 1}
+                onPrevious={() => totalLocalPages > 1 ? setLocalCurrentPage(localCurrentPage - 1) : onPageChange?.(currentPage - 1)}
+                hasNext={totalLocalPages > 1 ? localCurrentPage < totalLocalPages : currentPage < totalPages}
+                onNext={() => totalLocalPages > 1 ? setLocalCurrentPage(localCurrentPage + 1) : onPageChange?.(currentPage + 1)}
               />
             </InlineStack>
           )}

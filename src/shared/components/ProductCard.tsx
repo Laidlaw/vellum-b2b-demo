@@ -1,16 +1,17 @@
-import { 
-  Card, 
-  BlockStack, 
-  InlineStack, 
-  Text, 
-  Button, 
-  Badge, 
-  Image, 
+import {
+  Card,
+  BlockStack,
+  InlineStack,
+  Text,
+  Button,
+  Badge,
+  Image,
   ButtonGroup,
   Tooltip
 } from '@shopify/polaris';
 import { CartIcon, ContractIcon } from '@shopify/polaris-icons';
 import type { Product } from '../types';
+import { IMAGE_GENERATORS, PRODUCT_IMAGES } from '../../data/mock/constants';
 
 interface ProductCardProps {
   product: Product;
@@ -20,15 +21,15 @@ interface ProductCardProps {
   showVolumeDiscounts?: boolean;
 }
 
-export function ProductCard({ 
-  product, 
-  onAddToCart, 
-  onAddToQuote, 
+export function ProductCard({
+  product,
+  onAddToCart,
+  onAddToQuote,
   onViewDetails,
-  showVolumeDiscounts = true 
+  showVolumeDiscounts = true
 }: ProductCardProps) {
   const hasVolumeDiscounts = product.volumePricing.length > 0;
-  const lowestVolumePrice = hasVolumeDiscounts 
+  const lowestVolumePrice = hasVolumeDiscounts
     ? Math.min(...product.volumePricing.map(vp => vp.pricePerUnit))
     : null;
   const maxDiscount = hasVolumeDiscounts
@@ -42,9 +43,15 @@ export function ProductCard({
     }).format(price);
   };
 
-  const avgRating = product.reviews.length > 0 
+  const avgRating = product.reviews.length > 0
     ? product.reviews.reduce((sum, review) => sum + review.rating, 0) / product.reviews.length
     : 0;
+
+  // Get product image URL from imageId
+  const getProductImageUrl = (imageId?: string) => {
+    if (!imageId) return '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    return IMAGE_GENERATORS.local(imageId);
+  };
 
   return (
     <Card>
@@ -52,11 +59,16 @@ export function ProductCard({
         {/* Product Image */}
         <div style={{ position: 'relative' }}>
           <Image
-            source={product.imageUrl}
+            source={getProductImageUrl(product.imageId)}
             alt={product.name}
             width="100%"
             height="200px"
-            style={{ objectFit: 'cover', borderRadius: '6px' }}
+            style={{
+              objectFit: 'cover',
+              borderRadius: '6px',
+              filter: 'blur(3px) brightness(1.3) saturate(0.04)',
+              opacity: 0.95
+            }}
           />
           {!product.inStock && (
             <div style={{
