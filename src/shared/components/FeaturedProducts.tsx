@@ -104,8 +104,8 @@ export function FeaturedProducts({
                           width: '100%',
                           height: '100%',
                           objectFit: 'cover',
-                          filter: 'blur(2px) brightness(1.1) saturate(0.9)',
-                          opacity: 0.95
+                          //filter: 'blur(2px) brightness(1.1) saturate(0.9)',
+                          //opacity: 0.95
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;

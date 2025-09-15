@@ -64,8 +64,8 @@ export function ProductCard({
             style={{
               objectFit: 'cover',
               borderRadius: '6px',
-              filter: 'blur(3px) brightness(1.3) saturate(0.04)',
-              opacity: 0.95
+              //filter: 'blur(3px) brightness(1.3) saturate(0.04)',
+              //opacity: 0.95
             }}
           />
           {!product.inStock && (

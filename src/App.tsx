@@ -6,6 +6,7 @@ import StorefrontApp from './apps/storefront/StorefrontApp';
 import CustomerAdminApp from './apps/customer-admin/CustomerAdminApp';
 import MerchantPortalApp from './apps/merchant-portal/MerchantPortalApp';
 import AppFooter from './shared/components/AppFooter';
+import { ScrollToTop } from './shared/components/ScrollToTop';
 
 // Create React Query client
 const queryClient = new QueryClient({
@@ -39,6 +40,7 @@ function App() {
         }}
       >
         <Router>
+          <ScrollToTop />
           <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ flex: 1 }}>
               <Routes>
