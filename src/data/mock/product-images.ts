@@ -1,11 +1,13 @@
 // Professional B2B Product Image Mapping System
-// Curated, reliable images for consistent demo presentation
+// Uses local images for fast, reliable demo presentation
+
+import { getLocalProductImage, getLocalImageProps } from '../../shared/utils/localImages';
 
 export type ProductImageMapping = {
   [key: string]: string;
 };
 
-// High-quality, professional product images from reliable CDNs
+// Legacy: High-quality, professional product images from reliable CDNs (DEPRECATED)
 export const CURATED_PRODUCT_IMAGES: ProductImageMapping = {
   // Safety Equipment
   'Steel Toe Work Boots': 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5e?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80',
@@ -97,25 +99,10 @@ export const CATEGORY_FALLBACK_IMAGES = {
   'Material Handling': 'https://images.unsplash.com/photo-1581093458791-9d42a10c8e5a?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=400&q=80'
 } as const;
 
-// Smart image selector - guaranteed to return a working image URL (no placeholders)
+// Smart image selector - uses local images for fast, reliable loading
 export function getProductImage(productName: string, category: string, productId: string): string {
-  // First priority: Curated product-specific image
-  if (CURATED_PRODUCT_IMAGES[productName]) {
-    return CURATED_PRODUCT_IMAGES[productName];
-  }
-
-  // Second priority: Category fallback with cycling variety
-  const categoryImages = getCategoryImagePool(category);
-  if (categoryImages.length > 0) {
-    // Use product ID to consistently select the same image for the same product
-    const imageIndex = hashString(productId) % categoryImages.length;
-    return categoryImages[imageIndex];
-  }
-
-  // Third priority: Cycle through ALL available images from any category
-  const allImages = getAllImagePool();
-  const imageIndex = hashString(productId) % allImages.length;
-  return allImages[imageIndex];
+  // Use new local image system
+  return getLocalProductImage(productName, category, productId);
 }
 
 // Get a pool of images for each category by cycling through related curated images
@@ -217,16 +204,8 @@ export function getImageVariation(productId: string): { filter?: string; opacity
 
 // Generate image component props for consistent styling
 export function getImageProps(productName: string, category: string, productId: string) {
-  return {
-    src: getProductImage(productName, category, productId),
-    alt: productName,
-    style: {
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover' as const,
-      ...getImageVariation(productId)
-    }
-  };
+  // Use new local image system with built-in blur effects
+  return getLocalImageProps(productName, category, productId);
 }
 
 // Alternative: Professional industrial placeholder

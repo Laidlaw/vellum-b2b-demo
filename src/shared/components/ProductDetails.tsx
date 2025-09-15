@@ -20,6 +20,7 @@ import { CartIcon, ContractIcon, HeartIcon } from '@shopify/polaris-icons';
 import { useState, useMemo } from 'react';
 import type { Product } from '../types';
 import Rating from './Rating';
+import { formatDate } from '../utils';
 
 interface ProductDetailsProps {
   product: Product;
@@ -238,7 +239,7 @@ export function ProductDetails({
                             <Rating value={review.rating} />
                           </BlockStack>
                           <Text as="p" variant="bodySm" tone="subdued">
-                            {review.dateCreated.toLocaleDateString()}
+                            {formatDate(review.dateCreated)}
                           </Text>
                         </InlineStack>
                         <Text as="p">{review.comment}</Text>

@@ -4,16 +4,18 @@ import type { Product } from '../types';
 
 interface FeaturedProductsProps {
   products: Product[];
+  onAddToCart?: (productId: string) => void;
   onAddToQuote?: (productId: string) => void;
   onViewDetails?: (productId: string) => void;
   isLoading?: boolean;
 }
 
-export function FeaturedProducts({ 
-  products, 
-  onAddToQuote, 
-  onViewDetails, 
-  isLoading = false 
+export function FeaturedProducts({
+  products,
+  onAddToCart,
+  onAddToQuote,
+  onViewDetails,
+  isLoading = false
 }: FeaturedProductsProps) {
   // Get high-value featured products (top 6 by price)
   const featuredProducts = products
@@ -145,12 +147,19 @@ export function FeaturedProducts({
                       <Button
                         variant="primary"
                         size="medium"
+                        onClick={() => onAddToCart?.(product.id)}
+                      >
+                        Add to Cart
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="medium"
                         onClick={() => onAddToQuote?.(product.id)}
                       >
                         Request Quote
                       </Button>
                       <Button
-                        variant="secondary"
+                        variant="plain"
                         size="medium"
                         onClick={() => onViewDetails?.(product.id)}
                       >

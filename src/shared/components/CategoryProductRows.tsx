@@ -5,17 +5,19 @@ import type { Product, ProductCategory } from '../types';
 interface CategoryProductRowsProps {
   products: Product[];
   categories: ProductCategory[];
+  onAddToCart?: (productId: string) => void;
   onAddToQuote?: (productId: string) => void;
   onViewDetails?: (productId: string) => void;
   isLoading?: boolean;
 }
 
-export function CategoryProductRows({ 
-  products, 
-  categories, 
-  onAddToQuote, 
-  onViewDetails, 
-  isLoading = false 
+export function CategoryProductRows({
+  products,
+  categories,
+  onAddToCart,
+  onAddToQuote,
+  onViewDetails,
+  isLoading = false
 }: CategoryProductRowsProps) {
   if (isLoading) {
     return (
@@ -164,12 +166,19 @@ export function CategoryProductRows({
                           <Button
                             variant="primary"
                             size="medium"
+                            onClick={() => onAddToCart?.(product.id)}
+                          >
+                            Add to Cart
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="medium"
                             onClick={() => onAddToQuote?.(product.id)}
                           >
                             Quote
                           </Button>
                           <Button
-                            variant="secondary"
+                            variant="plain"
                             size="medium"
                             onClick={() => onViewDetails?.(product.id)}
                           >

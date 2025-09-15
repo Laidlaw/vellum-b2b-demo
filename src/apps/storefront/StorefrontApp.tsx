@@ -13,9 +13,12 @@ import { HeroSection } from '../../shared/components/HeroSection';
 import { FeaturedProducts } from '../../shared/components/FeaturedProducts';
 import { CategoryProductRows } from '../../shared/components/CategoryProductRows';
 import { TrustSignals } from '../../shared/components/TrustSignals';
+import { ShoppingCart } from '../../shared/components/ShoppingCart';
+import { CustomerQuotes } from '../../shared/components/CustomerQuotes';
 
-// Import types
-import type { Product, ProductCategory, User, ShoppingCart, QuoteItem } from '../../shared/types';
+// Import types and hooks
+import type { Product, ProductCategory, User, ShoppingCart as ShoppingCartType, QuoteItem } from '../../shared/types';
+import { useProducts, useCategories, useCart, useQuoteBuilder } from '../../shared/hooks';
 
 // Mock current user and cart data (in real app, this would come from stores/context)
 const mockUser: User = {
@@ -34,34 +37,26 @@ const mockUser: User = {
 };
 
 function StorefrontHome() {
-  const [showQuoteBuilder, setShowQuoteBuilder] = useState(false);
-  const [pendingQuoteItems, setPendingQuoteItems] = useState<QuoteItem[]>([]);
+  const navigate = useNavigate();
   const [toastActive, setToastActive] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
 
-  // Fetch products and categories for the homepage
-  const { data: productsResponse, isLoading: isLoadingProducts } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
-      const response = await fetch('/api/products');
-      return response.json();
-    }
-  });
-
-  const { data: categoriesResponse, isLoading: isLoadingCategories } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const response = await fetch('/api/categories');
-      return response.json();
-    }
-  });
-
-  const products: Product[] = productsResponse?.data || [];
-  const categories: ProductCategory[] = categoriesResponse?.data || [];
+  // Use custom hooks
+  const { data: productsResponse, isLoading: isLoadingProducts } = useProducts();
+  const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
+  const products = productsResponse?.data || [];
+  const { addItem: addToCart } = useCart();
+  const {
+    addToQuote,
+    isBuilderOpen,
+    openQuoteBuilder,
+    closeQuoteBuilder,
+    submitQuote
+  } = useQuoteBuilder();
 
   const handleRequestQuote = () => {
     // Navigate to products page for quote building
-    window.location.href = '/storefront/products';
+    navigate('/storefront/products');
   };
 
   const handleContactSales = () => {
@@ -70,30 +65,38 @@ function StorefrontHome() {
     setToastActive(true);
   };
 
+  const handleAddToCart = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      addToCart(product, 1);
+      setToastMessage('Product added to cart');
+      setToastActive(true);
+    }
+  };
+
   const handleAddToQuote = (productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product) {
-      const quoteItem: QuoteItem = {
-        productId: product.id,
-        product: product,
-        quantity: 1,
-        unitPrice: product.basePrice,
-        totalPrice: product.basePrice
-      };
-      setPendingQuoteItems([quoteItem]);
-      setShowQuoteBuilder(true);
+      addToQuote(product, 1);
+      openQuoteBuilder();
     }
   };
 
   const handleViewDetails = (productId: string) => {
-    window.location.href = `/storefront/products/${productId}`;
+    navigate(`/storefront/products/${productId}`);
   };
 
-  const handleSubmitQuote = () => {
-    setToastMessage('Quote request submitted successfully');
-    setToastActive(true);
-    setPendingQuoteItems([]);
-    setShowQuoteBuilder(false);
+  const handleSubmitQuote = async () => {
+    try {
+      await submitQuote({
+        name: `Quote ${new Date().toLocaleDateString()}`
+      });
+      setToastMessage('Quote request submitted successfully');
+      setToastActive(true);
+    } catch (error) {
+      setToastMessage('Failed to submit quote');
+      setToastActive(true);
+    }
   };
 
   const toastMarkup = toastActive ? (
@@ -113,6 +116,7 @@ function StorefrontHome() {
           {/* Featured Products */}
           <FeaturedProducts
             products={products}
+            onAddToCart={handleAddToCart}
             onAddToQuote={handleAddToQuote}
             onViewDetails={handleViewDetails}
             isLoading={isLoadingProducts}
@@ -122,6 +126,7 @@ function StorefrontHome() {
           <CategoryProductRows
             products={products}
             categories={categories}
+            onAddToCart={handleAddToCart}
             onAddToQuote={handleAddToQuote}
             onViewDetails={handleViewDetails}
             isLoading={isLoadingProducts || isLoadingCategories}
@@ -159,10 +164,9 @@ function StorefrontHome() {
       </Page>
 
       <QuoteBuilder
-        isOpen={showQuoteBuilder}
-        onClose={() => setShowQuoteBuilder(false)}
+        isOpen={isBuilderOpen}
+        onClose={closeQuoteBuilder}
         onSubmitQuote={handleSubmitQuote}
-        initialItems={pendingQuoteItems}
       />
 
       {toastMarkup}
@@ -174,48 +178,28 @@ function ProductsPage() {
   const navigate = useNavigate();
   const [toastActive, setToastActive] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
-  const [showQuoteBuilder, setShowQuoteBuilder] = useState(false);
-  const [pendingQuoteItems, setPendingQuoteItems] = useState<QuoteItem[]>([]);
 
-  // Fetch products
-  const { data: productsResponse, isLoading: isLoadingProducts } = useQuery({
-    queryKey: ['products'],
-    queryFn: async () => {
-      const response = await fetch('/api/products');
-      return response.json();
+  // Use custom hooks
+  const { data: productsResponse, isLoading: isLoadingProducts } = useProducts();
+  const { data: categories = [] } = useCategories();
+  const products = productsResponse?.data || [];
+  const { addItem: addToCart } = useCart();
+  const { addToQuote, isBuilderOpen, openQuoteBuilder, closeQuoteBuilder, submitQuote } = useQuoteBuilder();
+
+  const handleAddToCart = (productId: string) => {
+    const product = products.find(p => p.id === productId);
+    if (product) {
+      addToCart(product, 1);
+      setToastMessage('Product added to cart');
+      setToastActive(true);
     }
-  });
-
-  // Fetch categories
-  const { data: categoriesResponse } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const response = await fetch('/api/categories');
-      return response.json();
-    }
-  });
-
-  const products: Product[] = productsResponse?.data || [];
-  const categories: ProductCategory[] = categoriesResponse?.data || [];
-
-  const handleAddToCart = () => {
-    // In real app, this would update cart store
-    setToastMessage('Product added to cart');
-    setToastActive(true);
   };
 
   const handleAddToQuote = (productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product) {
-      const quoteItem: QuoteItem = {
-        productId: product.id,
-        product: product,
-        quantity: 1,
-        unitPrice: product.basePrice,
-        totalPrice: product.basePrice
-      };
-      setPendingQuoteItems([quoteItem]);
-      setShowQuoteBuilder(true);
+      addToQuote(product, 1);
+      openQuoteBuilder();
     }
   };
 
@@ -223,11 +207,17 @@ function ProductsPage() {
     navigate(`/storefront/products/${productId}`);
   };
 
-  const handleSubmitQuote = () => {
-    // In real app, this would submit to API
-    setToastMessage('Quote request submitted successfully');
-    setToastActive(true);
-    setPendingQuoteItems([]);
+  const handleSubmitQuote = async () => {
+    try {
+      await submitQuote({
+        name: `Quote ${new Date().toLocaleDateString()}`
+      });
+      setToastMessage('Quote request submitted successfully');
+      setToastActive(true);
+    } catch (error) {
+      setToastMessage('Failed to submit quote');
+      setToastActive(true);
+    }
   };
 
   const toastMarkup = toastActive ? (
@@ -246,10 +236,9 @@ function ProductsPage() {
       />
       
       <QuoteBuilder
-        isOpen={showQuoteBuilder}
-        onClose={() => setShowQuoteBuilder(false)}
+        isOpen={isBuilderOpen}
+        onClose={closeQuoteBuilder}
         onSubmitQuote={handleSubmitQuote}
-        initialItems={pendingQuoteItems}
       />
       
       {toastMarkup}
@@ -333,55 +322,58 @@ function ProductDetailsPage() {
 }
 
 function CartPage() {
+  const navigate = useNavigate();
+
+  const handleCheckout = () => {
+    // Navigate to checkout page (will implement later)
+    console.log('Navigate to checkout');
+  };
+
+  const handleContinueShopping = () => {
+    navigate('/storefront/products');
+  };
+
   return (
-    <Page 
-      title="Shopping Cart"
-      backAction={{
-        content: 'Storefront',
-        url: '/storefront'
-      }}
-    >
-      <Card>
-        <Text as="p">Shopping cart implementation coming soon...</Text>
-      </Card>
-    </Page>
+    <ShoppingCart
+      onCheckout={handleCheckout}
+      onContinueShopping={handleContinueShopping}
+    />
   );
 }
 
 function QuotesPage() {
+  const navigate = useNavigate();
+
+  const handleBack = () => {
+    navigate('/storefront');
+  };
+
+  const handleCreateQuote = () => {
+    navigate('/storefront/products');
+  };
+
   return (
-    <Page 
-      title="My Quotes"
-      backAction={{
-        content: 'Storefront',
-        url: '/storefront'
-      }}
-    >
-      <Card>
-        <Text as="p">Quote management implementation coming soon...</Text>
-      </Card>
-    </Page>
+    <CustomerQuotes
+      companyId={mockUser.companyId}
+      onBack={handleBack}
+      onCreateQuote={handleCreateQuote}
+    />
   );
 }
 
 function StorefrontWithNavigation() {
   const navigate = useNavigate();
   const location = useLocation();
-  
-  // Fetch categories for navigation
-  const { data: categoriesResponse } = useQuery({
-    queryKey: ['categories'],
-    queryFn: async () => {
-      const response = await fetch('/api/categories');
-      return response.json();
-    }
-  });
 
-  const categories: ProductCategory[] = categoriesResponse?.data || [];
-  const mockCart: ShoppingCart = {
+  // Use custom hooks
+  const { data: categories = [] } = useCategories();
+  const { items, totalAmount } = useCart();
+
+  // Convert cart items to the format expected by navigation
+  const mockCart: ShoppingCartType = {
     id: 'cart-1',
-    items: [],
-    totalAmount: 0,
+    items: items,
+    totalAmount: totalAmount,
     userId: mockUser.id,
     companyId: mockUser.companyId,
     dateCreated: new Date(),

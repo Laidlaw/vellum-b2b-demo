@@ -140,29 +140,29 @@ export function StorefrontNavigation({
   // Build navigation items
   const navigationItems = [
     {
-      url: '/storefront',
       label: 'Home',
       icon: HomeIcon,
-      selected: currentPath === '/storefront'
+      selected: currentPath === '/storefront',
+      onClick: () => onNavigate('/storefront')
     },
     {
-      url: '/storefront/products',
       label: 'All Products',
       icon: ProductIcon,
-      selected: currentPath.startsWith('/storefront/products')
+      selected: currentPath.startsWith('/storefront/products'),
+      onClick: () => onNavigate('/storefront/products')
     },
     {
-      url: '/storefront/cart',
       label: 'Shopping Cart',
       icon: CartIcon,
       selected: currentPath === '/storefront/cart',
-      badge: cartItemCount > 0 ? cartItemCount.toString() : undefined
+      badge: cartItemCount > 0 ? cartItemCount.toString() : undefined,
+      onClick: () => onNavigate('/storefront/cart')
     },
     {
-      url: '/storefront/quotes',
       label: 'My Quotes',
       icon: ContractIcon,
-      selected: currentPath.startsWith('/storefront/quotes')
+      selected: currentPath.startsWith('/storefront/quotes'),
+      onClick: () => onNavigate('/storefront/quotes')
     }
   ];
 
@@ -172,14 +172,13 @@ export function StorefrontNavigation({
       .filter(cat => cat.isActive)
       .slice(0, 8) // Limit to prevent overwhelming navigation
       .map(category => ({
-        url: `/storefront/products?category=${category.id}`,
         label: category.name,
-        selected: currentPath.includes(`category=${category.id}`)
+        selected: currentPath.includes(`category=${category.id}`),
+        onClick: () => onNavigate(`/storefront/products?category=${category.id}`)
       }));
 
     if (categoryNavItems.length > 0) {
       navigationItems.push({
-        url: '',
         label: 'Categories',
         icon: ProductIcon,
         selected: false,
@@ -191,10 +190,7 @@ export function StorefrontNavigation({
   const navigationMarkup = (
     <Navigation location={currentPath}>
       <Navigation.Section
-        items={navigationItems.map(item => ({
-          ...item,
-          onClick: item.url ? () => onNavigate(item.url) : undefined
-        }))}
+        items={navigationItems}
       />
 
       {/* Quick Actions Section */}
