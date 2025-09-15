@@ -15,15 +15,13 @@ import { IMAGE_GENERATORS, PRODUCT_IMAGES } from '../../data/mock/constants';
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart: (productId: string) => void;
-  onAddToQuote: (productId: string) => void;
+  onAddToQuote: (productId: string) => void; // Unified action for B2B workflow
   onViewDetails: (productId: string) => void;
   showVolumeDiscounts?: boolean;
 }
 
 export function ProductCard({
   product,
-  onAddToCart,
   onAddToQuote,
   onViewDetails,
   showVolumeDiscounts = true
@@ -49,7 +47,7 @@ export function ProductCard({
 
   // Get product image URL from imageId
   const getProductImageUrl = (imageId?: string) => {
-    if (!imageId) return '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    if (!imageId) return '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
     return IMAGE_GENERATORS.local(imageId);
   };
 
@@ -160,7 +158,7 @@ export function ProductCard({
         {/* Action Buttons */}
         <InlineStack gap="200">
           <ButtonGroup>
-            <Button 
+            <Button
               onClick={() => onViewDetails(product.id)}
               variant="secondary"
               fullWidth
@@ -170,18 +168,10 @@ export function ProductCard({
             <Button
               onClick={() => onAddToQuote(product.id)}
               icon={ContractIcon}
-              variant="secondary"
-              disabled={!product.inStock}
-            >
-              Quote
-            </Button>
-            <Button
-              onClick={() => onAddToCart(product.id)}
-              icon={CartIcon}
               variant="primary"
               disabled={!product.inStock}
             >
-              Add to Cart
+              Add to Quote
             </Button>
           </ButtonGroup>
         </InlineStack>

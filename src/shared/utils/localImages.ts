@@ -1,5 +1,5 @@
 // Local B2B Product Image System
-// Uses local assets stored in src/assets/products/
+// Uses local assets stored in public/products/ for deployment compatibility
 
 // Generic B2B product image filenames
 export const LOCAL_PRODUCT_IMAGES = {

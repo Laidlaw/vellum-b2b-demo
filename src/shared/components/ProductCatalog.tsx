@@ -25,7 +25,6 @@ interface ProductCatalogProps {
   currentPage?: number;
   totalPages?: number;
   onPageChange?: (page: number) => void;
-  onAddToCart: (productId: string) => void;
   onAddToQuote: (productId: string) => void;
   onViewDetails: (productId: string) => void;
 }
@@ -53,7 +52,6 @@ export function ProductCatalog({
   currentPage = 1,
   totalPages = 1,
   onPageChange,
-  onAddToCart,
   onAddToQuote,
   onViewDetails
 }: ProductCatalogProps) {
@@ -149,7 +147,7 @@ export function ProductCatalog({
 
   // Get product image URL from imageId
   const getProductImageUrl = (imageId?: string) => {
-    if (!imageId) return '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    if (!imageId) return '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
     return IMAGE_GENERATORS.local(imageId);
   };
 
@@ -308,7 +306,6 @@ export function ProductCatalog({
         <Grid.Cell key={product.id} columnSpan={{ xs: 6, sm: 4, md: 4, lg: 3, xl: 3 }}>
           <ProductCard
             product={product}
-            onAddToCart={onAddToCart}
             onAddToQuote={onAddToQuote}
             onViewDetails={onViewDetails}
           />

@@ -5,7 +5,6 @@ import { IMAGE_GENERATORS } from '../../data/mock/constants';
 
 interface FeaturedProductsProps {
   products: Product[];
-  onAddToCart?: (productId: string) => void;
   onAddToQuote?: (productId: string) => void;
   onViewDetails?: (productId: string) => void;
   isLoading?: boolean;
@@ -13,7 +12,6 @@ interface FeaturedProductsProps {
 
 export function FeaturedProducts({
   products,
-  onAddToCart,
   onAddToQuote,
   onViewDetails,
   isLoading = false
@@ -63,7 +61,7 @@ export function FeaturedProducts({
 
   // Get product image URL from imageId
   const getProductImageUrl = (imageId?: string) => {
-    if (!imageId) return '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    if (!imageId) return '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
     return IMAGE_GENERATORS.local(imageId);
   };
 
@@ -111,7 +109,7 @@ export function FeaturedProducts({
                         }}
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
-                          target.src = '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+                          target.src = '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
                         }}
                       />
                       {volumeDiscount && (
@@ -156,16 +154,9 @@ export function FeaturedProducts({
                       <Button
                         variant="primary"
                         size="medium"
-                        onClick={() => onAddToCart?.(product.id)}
-                      >
-                        Add to Cart
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="medium"
                         onClick={() => onAddToQuote?.(product.id)}
                       >
-                        Request Quote
+                        Add to Quote
                       </Button>
                       <Button
                         variant="plain"

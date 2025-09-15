@@ -1,295 +1,323 @@
+import { useState } from 'react';
 import {
-  Modal,
+  Page,
   Card,
-  BlockStack,
-  InlineStack,
+  ResourceList,
+  ResourceItem,
   Text,
   Button,
-  TextField,
-  DataTable,
-  Badge,
-  FormLayout,
+  InlineStack,
+  BlockStack,
+  Thumbnail,
   ButtonGroup,
-  Thumbnail
+  TextField,
+  EmptyState,
+  Divider,
+  Box,
+  FormLayout
 } from '@shopify/polaris';
-import { DeleteIcon, EditIcon } from '@shopify/polaris-icons';
-import { useState } from 'react';
-import type { QuoteItem } from '../types';
+import { DeleteIcon, EditIcon, ContractIcon } from '@shopify/polaris-icons';
+import { useCart } from '../hooks';
+import { formatCurrency, validateQuantity } from '../utils';
+import type { CartItem } from '../types';
 
 interface QuoteBuilderProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSubmitQuote: (items: QuoteItem[], notes: string) => void;
-  initialItems?: QuoteItem[];
+  onSubmitQuote?: () => void;
+  onContinueShopping?: () => void;
 }
 
-interface QuoteBuilderState {
-  items: QuoteItem[];
-  notes: string;
-  quoteName: string;
-}
+export function QuoteBuilder({ onSubmitQuote, onContinueShopping }: QuoteBuilderProps) {
+  const {
+    items,
+    totalAmount,
+    removeItem,
+    updateQuantity,
+    clearQuote,
+    quoteName,
+    purchaseOrderNumber,
+    notes,
+    updateQuoteMetadata,
+    submitQuote
+  } = useCart();
+  const [editingQuantities, setEditingQuantities] = useState<Record<string, string>>({});
 
-export function QuoteBuilder({
-  isOpen,
-  onClose,
-  onSubmitQuote,
-  initialItems = []
-}: QuoteBuilderProps) {
-  const [state, setState] = useState<QuoteBuilderState>({
-    items: initialItems,
-    notes: '',
-    quoteName: ''
-  });
-  const [editingItem, setEditingItem] = useState<string | null>(null);
-  const [editQuantity, setEditQuantity] = useState('');
-
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD'
-    }).format(price);
-  };
-
-  const calculateItemTotal = (item: QuoteItem) => {
-    const baseTotal = item.quantity * item.unitPrice;
-    const discount = item.discount || 0;
-    return baseTotal * (1 - discount);
-  };
-
-  const calculateQuoteTotal = () => {
-    return state.items.reduce((total, item) => total + calculateItemTotal(item), 0);
-  };
-
-  const updateItemQuantity = (itemId: string, newQuantity: number) => {
-    setState(prev => ({
-      ...prev,
-      items: prev.items.map(item => 
-        item.productId === itemId 
-          ? { ...item, quantity: newQuantity, totalPrice: newQuantity * item.unitPrice }
-          : item
-      )
-    }));
-  };
-
-  const removeItem = (itemId: string) => {
-    setState(prev => ({
-      ...prev,
-      items: prev.items.filter(item => item.productId !== itemId)
-    }));
-  };
-
-  const handleEditQuantity = (itemId: string, currentQuantity: number) => {
-    setEditingItem(itemId);
-    setEditQuantity(currentQuantity.toString());
-  };
-
-  const saveEditQuantity = () => {
-    if (editingItem && editQuantity) {
-      updateItemQuantity(editingItem, parseInt(editQuantity));
-      setEditingItem(null);
-      setEditQuantity('');
+  const handleSubmitQuote = async () => {
+    if (onSubmitQuote) {
+      await onSubmitQuote();
+    } else {
+      await submitQuote();
     }
   };
 
-  const cancelEdit = () => {
-    setEditingItem(null);
-    setEditQuantity('');
+  const handleQuantityEdit = (productId: string, currentQuantity: number) => {
+    setEditingQuantities(prev => ({
+      ...prev,
+      [productId]: currentQuantity.toString()
+    }));
   };
 
-  const handleSubmit = () => {
-    onSubmitQuote(state.items, state.notes);
-    onClose();
-    // Reset state
-    setState({
-      items: [],
-      notes: '',
-      quoteName: ''
+  const handleQuantityUpdate = (productId: string) => {
+    const newQuantityStr = editingQuantities[productId];
+    const validation = validateQuantity(newQuantityStr);
+
+    if (validation.isValid) {
+      const newQuantity = parseInt(newQuantityStr, 10);
+      updateQuantity(productId, newQuantity);
+      setEditingQuantities(prev => {
+        const { [productId]: removed, ...rest } = prev;
+        return rest;
+      });
+    }
+  };
+
+  const handleQuantityCancel = (productId: string) => {
+    setEditingQuantities(prev => {
+      const { [productId]: removed, ...rest } = prev;
+      return rest;
     });
   };
 
-  const quoteTableRows = state.items.map((item) => {
-    const isEditing = editingItem === item.productId;
-    
-    return [
-      // Product info with image
-      <InlineStack gap="300" blockAlign="center">
-        <Thumbnail
-          source={item.product.imageUrl}
-          alt={item.product.name}
-          size="small"
-        />
-        <BlockStack gap="100">
-          <Text as="span" variant="bodyMd" fontWeight="semibold">
-            {item.product.name}
-          </Text>
-          <Text as="span" variant="bodySm" tone="subdued">
-            {item.product.brand} • SKU: {item.product.sku}
-          </Text>
+  const renderQuoteItem = (item: CartItem) => {
+    const isEditing = productId in editingQuantities;
+    const productId = item.productId;
+    const totalPrice = (item.discount ?
+      item.product.basePrice * (1 - item.discount) :
+      item.product.basePrice) * item.quantity;
+
+    return (
+      <ResourceItem
+        id={productId}
+        media={
+          <Thumbnail
+            source={item.product.imageUrl}
+            alt={item.product.name}
+            size="medium"
+          />
+        }
+      >
+        <BlockStack gap="200">
+          <InlineStack align="space-between">
+            <BlockStack gap="100">
+              <Text variant="bodyMd" fontWeight="semibold">
+                {item.product.name}
+              </Text>
+              <Text variant="bodySm" tone="subdued">
+                {item.product.brand} • SKU: {item.product.sku}
+              </Text>
+              <Text variant="bodySm">
+                {formatCurrency(item.product.basePrice)} each
+                {item.discount && (
+                  <Text as="span" tone="critical">
+                    {' '}({Math.round(item.discount * 100)}% off)
+                  </Text>
+                )}
+              </Text>
+            </BlockStack>
+
+            <BlockStack gap="200" align="end">
+              <Text variant="headingMd">
+                {formatCurrency(totalPrice)}
+              </Text>
+
+              <InlineStack gap="200" align="center">
+                {isEditing ? (
+                  <InlineStack gap="100">
+                    <TextField
+                      label=""
+                      labelHidden
+                      type="number"
+                      value={editingQuantities[productId]}
+                      onChange={(value) => setEditingQuantities(prev => ({
+                        ...prev,
+                        [productId]: value
+                      }))}
+                      autoComplete="off"
+                      min="1"
+                      max="10000"
+                      style={{ width: '80px' }}
+                    />
+                    <ButtonGroup>
+                      <Button
+                        size="micro"
+                        onClick={() => handleQuantityUpdate(productId)}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        size="micro"
+                        variant="plain"
+                        onClick={() => handleQuantityCancel(productId)}
+                      >
+                        Cancel
+                      </Button>
+                    </ButtonGroup>
+                  </InlineStack>
+                ) : (
+                  <InlineStack gap="100" align="center">
+                    <Text variant="bodyMd">Qty: {item.quantity}</Text>
+                    <Button
+                      icon={EditIcon}
+                      variant="plain"
+                      size="micro"
+                      onClick={() => handleQuantityEdit(productId, item.quantity)}
+                      accessibilityLabel={`Edit quantity for ${item.product.name}`}
+                    />
+                  </InlineStack>
+                )}
+
+                <Button
+                  icon={DeleteIcon}
+                  variant="plain"
+                  tone="critical"
+                  size="micro"
+                  onClick={() => removeItem(productId)}
+                  accessibilityLabel={`Remove ${item.product.name} from quote`}
+                />
+              </InlineStack>
+            </BlockStack>
+          </InlineStack>
         </BlockStack>
-      </InlineStack>,
-      
-      // Quantity with edit functionality
-      isEditing ? (
-        <InlineStack gap="100">
-          <TextField
-            value={editQuantity}
-            onChange={setEditQuantity}
-            type="number"
-            min="1"
-            autoComplete="off"
-            label=""
-            labelHidden
-          />
-          <ButtonGroup>
-            <Button size="slim" onClick={saveEditQuantity}>Save</Button>
-            <Button size="slim" variant="secondary" onClick={cancelEdit}>Cancel</Button>
-          </ButtonGroup>
-        </InlineStack>
-      ) : (
-        <InlineStack gap="100" blockAlign="center">
-          <Text as="span">{item.quantity}</Text>
-          <Button
-            size="slim"
-            variant="plain"
-            icon={EditIcon}
-            onClick={() => handleEditQuantity(item.productId, item.quantity)}
-            accessibilityLabel="Edit quantity"
-          />
-        </InlineStack>
-      ),
-      
-      // Unit price
-      formatPrice(item.unitPrice),
-      
-      // Discount
-      item.discount ? (
-        <Badge tone="success">{Math.round(item.discount * 100)}% off</Badge>
-      ) : (
-        '-'
-      ),
-      
-      // Total
-      formatPrice(calculateItemTotal(item)),
-      
-      // Actions
-      <Button
-        size="slim"
-        variant="plain"
-        icon={DeleteIcon}
-        tone="critical"
-        onClick={() => removeItem(item.productId)}
-        accessibilityLabel="Remove item"
-      />
-    ];
-  });
+      </ResourceItem>
+    );
+  };
+
+  if (items.length === 0) {
+    return (
+      <Page
+        title="Quote Builder"
+        backAction={{
+          content: 'Continue Shopping',
+          onAction: onContinueShopping
+        }}
+      >
+        <EmptyState
+          heading="Your quote is empty"
+          image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
+          action={{
+            content: 'Continue Shopping',
+            onAction: onContinueShopping
+          }}
+        >
+          <Text as="p">Add products to your quote to see them here.</Text>
+        </EmptyState>
+      </Page>
+    );
+  }
 
   return (
-    <Modal
-      large
-      open={isOpen}
-      onClose={onClose}
-      title="Request Quote"
+    <Page
+      title={`Quote Builder (${items.length} item${items.length === 1 ? '' : 's'})`}
+      backAction={{
+        content: 'Continue Shopping',
+        onAction: onContinueShopping
+      }}
       primaryAction={{
-        content: 'Submit Quote Request',
-        onAction: handleSubmit,
-        disabled: state.items.length === 0
+        content: 'Submit for Approval',
+        onAction: handleSubmitQuote,
+        disabled: items.length === 0,
+        icon: ContractIcon
       }}
       secondaryActions={[
         {
-          content: 'Cancel',
-          onAction: onClose
+          content: 'Clear Quote',
+          destructive: true,
+          onAction: clearQuote,
+          disabled: items.length === 0
         }
       ]}
     >
-      <Modal.Section>
-        <BlockStack gap="400">
-          {/* Quote Summary */}
-          <Card>
-            <BlockStack gap="300">
-              <Text as="h2" variant="headingMd">Quote Summary</Text>
-              
-              <InlineStack align="space-between" blockAlign="baseline">
-                <Text as="p" variant="bodyLg">
-                  {state.items.length} item{state.items.length !== 1 ? 's' : ''}
-                </Text>
-                <Text as="p" variant="headingLg">
-                  Total: {formatPrice(calculateQuoteTotal())}
-                </Text>
-              </InlineStack>
-            </BlockStack>
-          </Card>
+      <BlockStack gap="500">
+        <Card>
+          <ResourceList
+            resourceName={{ singular: 'item', plural: 'items' }}
+            items={items}
+            renderItem={renderQuoteItem}
+          />
+        </Card>
 
-          {/* Quote Items Table */}
-          {state.items.length > 0 ? (
-            <Card>
-              <BlockStack gap="300">
-                <Text as="h3" variant="headingSm">Items</Text>
-                <DataTable
-                  columnContentTypes={['text', 'text', 'numeric', 'text', 'numeric', 'text']}
-                  headings={['Product', 'Quantity', 'Unit Price', 'Discount', 'Total', 'Actions']}
-                  rows={quoteTableRows}
-                />
-              </BlockStack>
-            </Card>
-          ) : (
-            <Card>
-              <BlockStack gap="200" inlineAlign="center">
-                <Text as="p" tone="subdued">No items in quote yet.</Text>
-                <Text as="p" variant="bodySm" tone="subdued">
-                  Add products to your quote by clicking "Add to Quote" on product pages.
-                </Text>
-              </BlockStack>
-            </Card>
-          )}
-
-          {/* Quote Details Form */}
-          <Card>
+        {/* Quote Metadata Form */}
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd">Quote Details</Text>
             <FormLayout>
-              <Text as="h3" variant="headingSm">Quote Details</Text>
-              
               <TextField
-                label="Quote name (optional)"
-                value={state.quoteName}
-                onChange={(value) => setState(prev => ({ ...prev, quoteName: value }))}
-                placeholder="e.g., Q4 Safety Equipment Purchase"
-                helpText="Give your quote a memorable name for easy reference"
-                autoComplete="off"
+                label="Quote Name"
+                value={quoteName}
+                onChange={(value) => updateQuoteMetadata({ quoteName: value })}
+                placeholder="Enter a name for this quote"
               />
-              
               <TextField
-                label="Additional notes"
-                value={state.notes}
-                onChange={(value) => setState(prev => ({ ...prev, notes: value }))}
-                multiline={4}
-                placeholder="Add any special requirements, delivery instructions, or questions..."
-                helpText="Include any specific requirements or questions about these products"
-                autoComplete="off"
+                label="Purchase Order Number"
+                value={purchaseOrderNumber}
+                onChange={(value) => updateQuoteMetadata({ purchaseOrderNumber: value })}
+                placeholder="Optional PO number"
+              />
+              <TextField
+                label="Notes"
+                value={notes}
+                onChange={(value) => updateQuoteMetadata({ notes: value })}
+                multiline={3}
+                placeholder="Any special requirements or notes..."
               />
             </FormLayout>
-          </Card>
+          </BlockStack>
+        </Card>
 
-          {/* Quote Information */}
-          <Card tone="subdued">
-            <BlockStack gap="200">
-              <Text as="h3" variant="headingSm">What happens next?</Text>
-              <BlockStack gap="100">
-                <Text as="p" variant="bodySm">
-                  • Your quote request will be reviewed by our sales team
-                </Text>
-                <Text as="p" variant="bodySm">
-                  • You'll receive a detailed quote within 1-2 business days
-                </Text>
-                <Text as="p" variant="bodySm">
-                  • The quote will include final pricing, delivery options, and terms
-                </Text>
-                <Text as="p" variant="bodySm">
-                  • You can track quote status in your "My Quotes" section
-                </Text>
-              </BlockStack>
-            </BlockStack>
-          </Card>
-        </BlockStack>
-      </Modal.Section>
-    </Modal>
+        <Card>
+          <BlockStack gap="300">
+            <Text variant="headingMd">Quote Summary</Text>
+            <Divider />
+
+            <InlineStack align="space-between">
+              <Text variant="bodyMd">
+                Subtotal ({items.reduce((sum, item) => sum + item.quantity, 0)} items)
+              </Text>
+              <Text variant="bodyMd" fontWeight="semibold">
+                {formatCurrency(totalAmount)}
+              </Text>
+            </InlineStack>
+
+            <InlineStack align="space-between">
+              <Text variant="bodyMd">Shipping</Text>
+              <Text variant="bodyMd">To be calculated</Text>
+            </InlineStack>
+
+            <InlineStack align="space-between">
+              <Text variant="bodyMd">Tax</Text>
+              <Text variant="bodyMd">To be calculated</Text>
+            </InlineStack>
+
+            <Divider />
+
+            <InlineStack align="space-between">
+              <Text variant="headingMd">Estimated Total</Text>
+              <Text variant="headingMd">
+                {formatCurrency(totalAmount)}
+              </Text>
+            </InlineStack>
+
+            <Box paddingBlockStart="400">
+              <InlineStack gap="200">
+                <Button
+                  variant="primary"
+                  size="large"
+                  icon={ContractIcon}
+                  onClick={handleSubmitQuote}
+                  disabled={items.length === 0}
+                >
+                  Submit for Approval
+                </Button>
+                <Button
+                  size="large"
+                  onClick={onContinueShopping}
+                >
+                  Continue Shopping
+                </Button>
+              </InlineStack>
+            </Box>
+          </BlockStack>
+        </Card>
+      </BlockStack>
+    </Page>
   );
 }

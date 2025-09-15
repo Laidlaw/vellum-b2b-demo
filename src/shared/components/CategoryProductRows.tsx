@@ -5,7 +5,6 @@ import type { Product, ProductCategory } from '../types';
 interface CategoryProductRowsProps {
   products: Product[];
   categories: ProductCategory[];
-  onAddToCart?: (productId: string) => void;
   onAddToQuote?: (productId: string) => void;
   onViewDetails?: (productId: string) => void;
   isLoading?: boolean;
@@ -14,7 +13,6 @@ interface CategoryProductRowsProps {
 export function CategoryProductRows({
   products,
   categories,
-  onAddToCart,
   onAddToQuote,
   onViewDetails,
   isLoading = false
@@ -116,7 +114,7 @@ export function CategoryProductRows({
                             }}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = `https://via.placeholder.com/280x160/cccccc/666666?text=${encodeURIComponent(product.name)}`;
+                              target.src = '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
                             }}
                           />
                           {volumeDiscount && (
@@ -166,16 +164,9 @@ export function CategoryProductRows({
                           <Button
                             variant="primary"
                             size="medium"
-                            onClick={() => onAddToCart?.(product.id)}
-                          >
-                            Add to Cart
-                          </Button>
-                          <Button
-                            variant="secondary"
-                            size="medium"
                             onClick={() => onAddToQuote?.(product.id)}
                           >
-                            Quote
+                            Add to Quote
                           </Button>
                           <Button
                             variant="plain"

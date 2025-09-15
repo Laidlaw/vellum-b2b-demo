@@ -25,14 +25,12 @@ import { IMAGE_GENERATORS } from '../../data/mock/constants';
 
 interface ProductDetailsProps {
   product: Product;
-  onAddToCart: (productId: string, quantity: number) => void;
   onAddToQuote: (productId: string, quantity: number) => void;
   onBack: () => void;
 }
 
 export function ProductDetails({
   product,
-  onAddToCart,
   onAddToQuote,
   onBack
 }: ProductDetailsProps) {
@@ -47,7 +45,7 @@ export function ProductDetails({
 
   // Get product image URL from imageId
   const getProductImageUrl = (imageId?: string) => {
-    if (!imageId) return '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    if (!imageId) return '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
     return IMAGE_GENERATORS.local(imageId);
   };
 
@@ -126,8 +124,8 @@ export function ProductDetails({
     }
   ];
 
-  const handleAddToCart = () => {
-    onAddToCart(product.id, quantityNumber);
+  const handleAddToQuote = () => {
+    onAddToQuote(product.id, quantityNumber);
   };
 
   const handleRequestQuote = () => {
@@ -428,21 +426,11 @@ export function ProductDetails({
                     fullWidth
                     variant="primary"
                     size="large"
-                    icon={CartIcon}
-                    onClick={handleAddToCart}
+                    icon={ContractIcon}
+                    onClick={handleAddToQuote}
                     disabled={!product.inStock || quantityNumber > maxQuantity}
                   >
-                    Add to Cart
-                  </Button>
-                  
-                  <Button
-                    fullWidth
-                    variant="secondary"
-                    size="large"
-                    icon={ContractIcon}
-                    onClick={() => setShowQuoteModal(true)}
-                  >
-                    Request Quote
+                    Add to Quote
                   </Button>
                 </BlockStack>
 

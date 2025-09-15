@@ -13,7 +13,6 @@ import { HeroSection } from '../../shared/components/HeroSection';
 import { FeaturedProducts } from '../../shared/components/FeaturedProducts';
 import { CategoryProductRows } from '../../shared/components/CategoryProductRows';
 import { TrustSignals } from '../../shared/components/TrustSignals';
-import { ShoppingCart } from '../../shared/components/ShoppingCart';
 import { CustomerQuotes } from '../../shared/components/CustomerQuotes';
 
 // Import types and hooks
@@ -65,20 +64,13 @@ function StorefrontHome() {
     setToastActive(true);
   };
 
-  const handleAddToCart = (productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      addToCart(product, 1);
-      setToastMessage('Product added to cart');
-      setToastActive(true);
-    }
-  };
-
+  // Unified B2B action: Add to quote (cart is the quote staging area)
   const handleAddToQuote = (productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product) {
-      addToQuote(product, 1);
-      openQuoteBuilder();
+      addToCart(product, 1); // Cart IS the quote staging area in B2B
+      setToastMessage('Product added to quote request');
+      setToastActive(true);
     }
   };
 
@@ -116,7 +108,6 @@ function StorefrontHome() {
           {/* Featured Products */}
           <FeaturedProducts
             products={products}
-            onAddToCart={handleAddToCart}
             onAddToQuote={handleAddToQuote}
             onViewDetails={handleViewDetails}
             isLoading={isLoadingProducts}
@@ -126,7 +117,6 @@ function StorefrontHome() {
           <CategoryProductRows
             products={products}
             categories={categories}
-            onAddToCart={handleAddToCart}
             onAddToQuote={handleAddToQuote}
             onViewDetails={handleViewDetails}
             isLoading={isLoadingProducts || isLoadingCategories}
@@ -186,22 +176,16 @@ function ProductsPage() {
   const { addItem: addToCart } = useCart();
   const { addToQuote, isBuilderOpen, openQuoteBuilder, closeQuoteBuilder, submitQuote } = useQuoteBuilder();
 
-  const handleAddToCart = (productId: string) => {
+  // Unified B2B action: Add to quote (cart is the quote staging area)
+  const handleAddToQuote = (productId: string) => {
     const product = products.find(p => p.id === productId);
     if (product) {
-      addToCart(product, 1);
-      setToastMessage('Product added to cart');
+      addToCart(product, 1); // Cart IS the quote staging area in B2B
+      setToastMessage('Product added to quote request');
       setToastActive(true);
     }
   };
 
-  const handleAddToQuote = (productId: string) => {
-    const product = products.find(p => p.id === productId);
-    if (product) {
-      addToQuote(product, 1);
-      openQuoteBuilder();
-    }
-  };
 
   const handleViewDetails = (productId: string) => {
     navigate(`/storefront/products/${productId}`);
@@ -230,7 +214,6 @@ function ProductsPage() {
         products={products}
         categories={categories}
         isLoading={isLoadingProducts}
-        onAddToCart={handleAddToCart}
         onAddToQuote={handleAddToQuote}
         onViewDetails={handleViewDetails}
       />
@@ -264,11 +247,7 @@ function ProductDetailsPage() {
 
   const product: Product = productResponse?.data;
 
-  const handleAddToCart = (productId: string, quantity: number) => {
-    setToastMessage(`Added ${quantity} item(s) to cart`);
-    setToastActive(true);
-  };
-
+  // Unified B2B action: Add to quote (cart is the quote staging area)
   const handleAddToQuote = (productId: string, quantity: number) => {
     setToastMessage(`Added ${quantity} item(s) to quote request`);
     setToastActive(true);
@@ -312,7 +291,6 @@ function ProductDetailsPage() {
     <>
       <ProductDetails
         product={product}
-        onAddToCart={handleAddToCart}
         onAddToQuote={handleAddToQuote}
         onBack={handleBack}
       />
@@ -324,9 +302,9 @@ function ProductDetailsPage() {
 function CartPage() {
   const navigate = useNavigate();
 
-  const handleCheckout = () => {
-    // Navigate to checkout page (will implement later)
-    console.log('Navigate to checkout');
+  const handleSubmitQuote = async () => {
+    // Submit quote for approval (B2B workflow)
+    console.log('Submit quote for approval');
   };
 
   const handleContinueShopping = () => {
@@ -334,8 +312,8 @@ function CartPage() {
   };
 
   return (
-    <ShoppingCart
-      onCheckout={handleCheckout}
+    <QuoteBuilder
+      onSubmitQuote={handleSubmitQuote}
       onContinueShopping={handleContinueShopping}
     />
   );

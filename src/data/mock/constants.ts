@@ -13,11 +13,11 @@ export type ImageProvider = 'unsplash' | 'picsum' | 'placeholder' | 'static' | '
 
 export const IMAGE_CONFIG = {
   provider: 'local' as ImageProvider, // Use local assets for demo performance
-  fallbackProvider: 'placeholder' as ImageProvider,
+  fallbackProvider: 'local' as ImageProvider, // No external fallbacks
   dimensions: { width: 400, height: 400 }
 } as const;
 
-// Local product images from src/assets/products/
+// Local product images from public/products/ (deployed via public directory)
 export const PRODUCT_IMAGES = {
   'img-001': 'angle-grinder-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
   'img-002': 'circular-saw-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
@@ -53,20 +53,15 @@ export const PRODUCT_IMAGES = {
 export const IMAGE_GENERATORS = {
   local: (imageId: string) => {
     const filename = PRODUCT_IMAGES[imageId as keyof typeof PRODUCT_IMAGES];
-    return filename ? `/src/assets/products/${filename}` : '/src/assets/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    // Use public directory paths for proper deployment
+    return filename ? `/products/${filename}` : '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
   },
 
-  unsplash: (searchTerms: string) =>
-    `https://source.unsplash.com/${IMAGE_CONFIG.dimensions.width}x${IMAGE_CONFIG.dimensions.height}/?${searchTerms}`,
-
-  picsum: (productId: string) =>
-    `https://picsum.photos/${IMAGE_CONFIG.dimensions.width}/${IMAGE_CONFIG.dimensions.height}?random=${productId}`,
-
-  placeholder: (productName: string) =>
-    `https://via.placeholder.com/${IMAGE_CONFIG.dimensions.width}x${IMAGE_CONFIG.dimensions.height}/cccccc/666666?text=${encodeURIComponent(productName)}`,
-
-  static: (category: string) =>
-    `/images/products/${category.toLowerCase().replace(/\s+/g, '-')}.jpg`
+  // Disabled external generators to prevent network requests
+  // unsplash: (searchTerms: string) => '',
+  // picsum: (productId: string) => '',
+  // placeholder: (productName: string) => '',
+  // static: (category: string) => ''
 } as const;
 
 // ============================================================================
