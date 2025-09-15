@@ -78,8 +78,8 @@ export function QuoteBuilder({ onSubmitQuote, onContinueShopping }: QuoteBuilder
   };
 
   const renderQuoteItem = (item: CartItem) => {
-    const isEditing = productId in editingQuantities;
     const productId = item.productId;
+    const isEditing = productId in editingQuantities;
     const totalPrice = (item.discount ?
       item.product.basePrice * (1 - item.discount) :
       item.product.basePrice) * item.quantity;

@@ -1,5 +1,5 @@
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useState } from 'react';
 import {
   Page,
   Card,
@@ -7,21 +7,13 @@ import {
   Text,
   Button,
   InlineStack,
-  Layout,
-  TopBar,
-  Frame
+  Layout
 } from '@shopify/polaris';
-import {
-  SettingsIcon,
-  NotificationIcon,
-} from '@shopify/polaris-icons';
 import { Link } from 'react-router-dom';
-import QuotesTable from './components/QuotesTable';
-import OrdersTable from './components/OrdersTable';
+import { QuotesTable, OrdersTable } from '../../shared/components/tables';
+import { AppFrame } from '../../shared/components/layout';
 import CompaniesPage from './pages/CompaniesPage';
 import CustomersPage from './pages/CustomersPage';
-import { MerchantNavigation } from './components/MerchantNavigation';
-import { createNavigationSections } from './config/navigationConfig';
 
 function MerchantPortalHome() {
   return (
@@ -166,130 +158,51 @@ function InvoicesPage() {
 }
 
 export default function MerchantPortalApp() {
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const [mobileNavigationActive, setMobileNavigationActive] = useState(false);
-  const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [salesChannelsExpanded, setSalesChannelsExpanded] = useState(false);
   const [appsExpanded, setAppsExpanded] = useState(false);
-  const [customersExpanded, setCustomersExpanded] = useState(
-    location.pathname.startsWith('/merchant-portal/customers')
-  );
+  const [customersExpanded, setCustomersExpanded] = useState(false);
 
-  // Auto-expand customers when on customer pages
-  useEffect(() => {
-    if (location.pathname.startsWith('/merchant-portal/customers')) {
-      setCustomersExpanded(true);
-    }
-  }, [location.pathname]);
+  const currentUser = {
+    name: "Merchant User",
+    detail: "Demo Merchant Store",
+    initials: "MU"
+  };
 
-  const toggleMobileNavigationActive = () =>
-    setMobileNavigationActive((mobileNavigationActive) => !mobileNavigationActive);
+  const handleUserLogout = () => {
+    console.log('Merchant logout');
+  };
 
-  const toggleUserMenuOpen = () => setUserMenuOpen((open) => !open);
-
-  const userMenuActions = [
-    {
-      items: [
-        { content: 'Profile settings', icon: SettingsIcon },
-        { content: 'Help center' },
-        { content: 'Sign out' }
-      ]
-    }
-  ];
-  
-  const navigationSections = createNavigationSections(
-    location.pathname,
-    salesChannelsExpanded,
-    appsExpanded,
-    customersExpanded,
-    () => setSalesChannelsExpanded(!salesChannelsExpanded),
-    () => setAppsExpanded(!appsExpanded),
-    () => setCustomersExpanded(!customersExpanded)
-  );
-
-  const navigationMarkup = (
-    <MerchantNavigation
-      currentPath={location.pathname}
-      sections={navigationSections}
-      onNavigate={navigate}
-    />
-  );
-  
-    const topBarMarkup = (
-      <TopBar
-        showNavigationToggle
-        userMenu={
-          <TopBar.UserMenu
-            actions={userMenuActions}
-            name="Sarah Chen"
-            detail="Acme Industrial Solutions"
-            initials="SC"
-            open={userMenuOpen}
-            onToggle={toggleUserMenuOpen}
-          />
-        }
-        secondaryMenu={
-          <TopBar.Menu
-            activatorContent={
-              <span>
-                <NotificationIcon />
-              </span>
-            }
-            open={false}
-            onOpen={() => {}}
-            onClose={() => {}}
-            actions={[
-              {
-                items: [{ content: 'View all notifications' }],
-              },
-            ]}
-          />
-        }
-        onNavigationToggle={toggleMobileNavigationActive}
-      />
-    );
-  
-    return (
-      <Frame
-        topBar={topBarMarkup}
-        navigation={navigationMarkup}
-        showMobileNavigation={mobileNavigationActive}
-        onNavigationDismiss={toggleMobileNavigationActive}
-      >
-        <Routes>
-          <Route index element={<MerchantPortalHome />} />
-          <Route path="orders/*" element={<OrdersPage />} />
-          <Route path="products" element={<Page title="Products"><Card><Text>Products page</Text></Card></Page>} />
-          <Route path="customers" element={<CustomersPage />} />
-          <Route path="customers/companies" element={<CompaniesPage />} />
-          <Route path="customers/segments" element={<Page title="Segments"><Card><Text>Segments page</Text></Card></Page>} />
-          <Route path="marketing" element={<Page title="Marketing"><Card><Text>Marketing page</Text></Card></Page>} />
-          <Route path="discounts" element={<Page title="Discounts"><Card><Text>Discounts page</Text></Card></Page>} />
-          <Route path="content" element={<Page title="Content"><Card><Text>Content page</Text></Card></Page>} />
-          <Route path="markets" element={<Page title="Markets"><Card><Text>Markets page</Text></Card></Page>} />
-          <Route path="finance" element={<Page title="Finance"><Card><Text>Finance page</Text></Card></Page>} />
-          <Route path="analytics" element={<Page title="Analytics"><Card><Text>Analytics page</Text></Card></Page>} />
-          <Route path="settings" element={<Page title="Settings"><Card><Text>Settings page</Text></Card></Page>} />
-          <Route path="quotes/*" element={<QuotesPage />} />
-          <Route path="users" element={<UsersPage />} />
-          <Route path="company" element={<CompanyPage />} />
-          <Route path="invoices" element={<InvoicesPage />} />
-        </Routes>
-      </Frame>
-    );
-  }
-/*
-export default function MerchantPortalApp() {
   return (
-    <Routes>
-      <Route index element={<MerchantPortalHome />} />
-      <Route path="companies/*" element={<CompaniesPage />} />
-      <Route path="orders" element={<OrdersPage />} />
-      <Route path="analytics" element={<AnalyticsPage />} />
-    </Routes>
+    <AppFrame
+      appType="merchant-portal"
+      currentUser={currentUser}
+      salesChannelsExpanded={salesChannelsExpanded}
+      appsExpanded={appsExpanded}
+      customersExpanded={customersExpanded}
+      onToggleSalesChannels={() => setSalesChannelsExpanded(!salesChannelsExpanded)}
+      onToggleApps={() => setAppsExpanded(!appsExpanded)}
+      onToggleCustomers={() => setCustomersExpanded(!customersExpanded)}
+      onUserLogout={handleUserLogout}
+    >
+      <Routes>
+        <Route index element={<MerchantPortalHome />} />
+        <Route path="orders/*" element={<OrdersPage />} />
+        <Route path="products" element={<Page title="Products"><Card><Text>Products page</Text></Card></Page>} />
+        <Route path="customers" element={<CustomersPage />} />
+        <Route path="customers/companies" element={<CompaniesPage />} />
+        <Route path="customers/segments" element={<Page title="Segments"><Card><Text>Segments page</Text></Card></Page>} />
+        <Route path="marketing" element={<Page title="Marketing"><Card><Text>Marketing page</Text></Card></Page>} />
+        <Route path="discounts" element={<Page title="Discounts"><Card><Text>Discounts page</Text></Card></Page>} />
+        <Route path="content" element={<Page title="Content"><Card><Text>Content page</Text></Card></Page>} />
+        <Route path="markets" element={<Page title="Markets"><Card><Text>Markets page</Text></Card></Page>} />
+        <Route path="finance" element={<Page title="Finance"><Card><Text>Finance page</Text></Card></Page>} />
+        <Route path="analytics" element={<Page title="Analytics"><Card><Text>Analytics page</Text></Card></Page>} />
+        <Route path="settings" element={<Page title="Settings"><Card><Text>Settings page</Text></Card></Page>} />
+        <Route path="quotes/*" element={<QuotesPage />} />
+        <Route path="users" element={<UsersPage />} />
+        <Route path="company" element={<CompanyPage />} />
+        <Route path="invoices" element={<InvoicesPage />} />
+      </Routes>
+    </AppFrame>
   );
 }
-
-*/

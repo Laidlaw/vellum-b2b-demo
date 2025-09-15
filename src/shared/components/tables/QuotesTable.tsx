@@ -15,7 +15,9 @@ import {
   Divider
 } from '@shopify/polaris';
 import { useQuery } from '@tanstack/react-query';
-import type { Quote, PaginatedResponse } from '../../../shared/types';
+import type { Quote, PaginatedResponse } from '../../types';
+import { formatCurrency, formatDate } from '../../utils';
+import { getLocalProductImage } from '../../utils/localImages';
 
 interface QuotesTableProps {
   companyId?: string;
@@ -39,21 +41,6 @@ function QuoteStatusBadge({ status }: { status: Quote['status'] }) {
   return <Badge tone={config.tone} size="small">{config.label}</Badge>;
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount);
-}
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  }).format(new Date(date));
-}
-
 export default function QuotesTable({ companyId }: QuotesTableProps) {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [selectedQuote, setSelectedQuote] = useState<Quote | null>(null);
@@ -70,7 +57,7 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
       if (companyId) params.append('companyId', companyId);
       if (filters.status.length) params.append('status', filters.status.join(','));
       if (filters.queryValue) params.append('search', filters.queryValue);
-      
+
       const response = await fetch(`/api/quotes?${params.toString()}`);
       return response.json();
     }
@@ -162,7 +149,7 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
       orderRef
     } = quote;
 
-    const isExpiringSoon = status === 'pending' && timeUntilExpiration.includes('day') && 
+    const isExpiringSoon = status === 'pending' && timeUntilExpiration.includes('day') &&
       parseInt(timeUntilExpiration) <= 7;
 
     return (
@@ -184,7 +171,7 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
                   <Badge tone="attention">Expires Soon</Badge>
                 )}
               </InlineStack>
-              
+
               <BlockStack gap="200">
                 <InlineStack gap="400">
                   <Box>
@@ -212,7 +199,7 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
                     </Text>
                   </Box>
                 </InlineStack>
-                
+
                 <InlineStack gap="400">
                   {purchaseOrderNumber && (
                     <Box>
@@ -237,15 +224,15 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
                 </InlineStack>
               </BlockStack>
             </BlockStack>
-            
+
             {/* Right section - Amount and actions */}
             <BlockStack gap="300" align="end">
               <Text as="p" variant="headingLg" fontWeight="bold">
                 {formatCurrency(amount)}
               </Text>
               <InlineStack gap="200">
-                <Button 
-                  size="small" 
+                <Button
+                  size="small"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleQuoteClick(quote);
@@ -254,8 +241,8 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
                   View Details
                 </Button>
                 {status === 'pending' && (
-                  <Button 
-                    size="small" 
+                  <Button
+                    size="small"
                     variant="primary"
                     onClick={async (e) => {
                       e.stopPropagation();
@@ -460,22 +447,43 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
                   {selectedQuote.items.map((item, index) => (
                     <Box key={index}>
                       <InlineStack align="space-between" blockAlign="start">
-                        <BlockStack gap="200">
-                          <Text as="p" variant="bodyMd" fontWeight="semibold">
-                            {item.product.name}
-                          </Text>
-                          <InlineStack gap="300">
-                            <Text as="p" variant="bodySm" tone="subdued">
-                              SKU: {item.product.sku}
+                        <InlineStack gap="400" blockAlign="start">
+                          {/* Product Image */}
+                          <Box>
+                            <img
+                              src={getLocalProductImage(item.product.name, item.product.category, item.product.id)}
+                              alt={item.product.name}
+                              style={{
+                                width: '60px',
+                                height: '60px',
+                                objectFit: 'cover',
+                                borderRadius: '8px',
+                                filter: 'blur(2px) brightness(1.1) saturate(0.9)'
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/products/generic-product.jpg';
+                              }}
+                            />
+                          </Box>
+                          {/* Product Details */}
+                          <BlockStack gap="200">
+                            <Text as="p" variant="bodyMd" fontWeight="semibold">
+                              {item.product.name}
                             </Text>
-                            <Text as="p" variant="bodySm" tone="subdued">
-                              Quantity: {item.quantity}
-                            </Text>
-                            <Text as="p" variant="bodySm" tone="subdued">
-                              Unit Price: {formatCurrency(item.totalPrice / item.quantity)}
-                            </Text>
-                          </InlineStack>
-                        </BlockStack>
+                            <InlineStack gap="300">
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                SKU: {item.product.sku}
+                              </Text>
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                Quantity: {item.quantity}
+                              </Text>
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                Unit Price: {formatCurrency(item.totalPrice / item.quantity)}
+                              </Text>
+                            </InlineStack>
+                          </BlockStack>
+                        </InlineStack>
                         <Text as="p" variant="bodyLg" fontWeight="semibold">
                           {formatCurrency(item.totalPrice)}
                         </Text>
@@ -487,7 +495,7 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
                       )}
                     </Box>
                   ))}
-                  
+
                   <Box paddingBlockStart="400">
                     <Divider />
                     <Box paddingBlockStart="300">

@@ -1,19 +1,19 @@
 import { Navigation } from '@shopify/polaris';
 import { ChevronDownIcon, ChevronRightIcon } from '@shopify/polaris-icons';
 import { createNavigationItem } from './NavigationItem';
-import type { NavigationSection } from '../config/navigationConfig';
+import type { NavigationSection } from './navigationConfig';
 
-interface MerchantNavigationProps {
+interface AppNavigationProps {
   currentPath: string;
   sections: NavigationSection[];
   onNavigate: (path: string) => void;
 }
 
-export function MerchantNavigation({
+export function AppNavigation({
   currentPath,
   sections,
   onNavigate
-}: MerchantNavigationProps) {
+}: AppNavigationProps) {
   return (
     <Navigation location={currentPath}>
       {sections.map((section, index) => {

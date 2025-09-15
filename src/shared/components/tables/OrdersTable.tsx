@@ -14,8 +14,9 @@ import {
   ChoiceList
 } from '@shopify/polaris';
 import { useQuery } from '@tanstack/react-query';
-import type { Order, PaginatedResponse } from '../../../shared/types';
-import { IMAGE_GENERATORS } from '../../../data/mock/constants';
+import type { Order, PaginatedResponse } from '../../types';
+import { formatCurrency, formatDate } from '../../utils';
+import { getLocalProductImage } from '../../utils/localImages';
 
 interface OrdersTableProps {
   companyId?: string;
@@ -51,31 +52,11 @@ function PaymentStatusBadge({ status }: { status: Order['paymentStatus'] }) {
   return <Badge tone={config.tone}>{config.label}</Badge>;
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD'
-  }).format(amount);
-}
-
-function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
-  }).format(new Date(date));
-}
-
 function formatShortDate(date: Date): string {
   return new Intl.DateTimeFormat('en-US', {
     month: 'short',
     day: 'numeric'
   }).format(new Date(date));
-}
-
-function getProductImageUrl(imageId?: string) {
-  if (!imageId) return '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
-  return IMAGE_GENERATORS.local(imageId);
 }
 
 export default function OrdersTable({ companyId }: OrdersTableProps) {
@@ -93,7 +74,7 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
       if (companyId) params.append('companyId', companyId);
       if (filters.status.length) params.append('status', filters.status.join(','));
       if (filters.queryValue) params.append('search', filters.queryValue);
-      
+
       const response = await fetch(`/api/orders?${params.toString()}`);
       return response.json();
     }
@@ -112,6 +93,7 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
   const filterControl = (
     <Filters
       queryValue={filters.queryValue}
+      queryPlaceholder="Search orders..."
       onQueryChange={(value) => handleFilterChange({ ...filters, queryValue: value })}
       onQueryClear={() => handleFilterChange({ ...filters, queryValue: '' })}
       onClearAll={() => handleFilterChange({ status: [], queryValue: '' })}
@@ -134,7 +116,8 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
               onChange={(value) => handleFilterChange({ ...filters, status: value })}
               allowMultiple
             />
-          )
+          ),
+          shortcut: true
         }
       ]}
     />
@@ -154,7 +137,7 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
     <>
       <BlockStack gap="400">
         {filterControl}
-        
+
         <BlockStack gap="300">
           {orders.length === 0 ? (
             <Card>
@@ -180,8 +163,8 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
                           )}
                         </InlineStack>
                       </BlockStack>
-                      <Button 
-                        variant="plain" 
+                      <Button
+                        variant="plain"
                         onClick={() => handleOrderClick(order)}
                         size="micro"
                       >
@@ -194,7 +177,7 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
                       {order.items.slice(0, 4).map((item, index) => (
                         <Thumbnail
                           key={index}
-                          source={getProductImageUrl(item.product.imageId)}
+                          source={getLocalProductImage(item.product.name, item.product.category, item.product.id)}
                           alt={item.product.name}
                           size="medium"
                         />
@@ -307,7 +290,7 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
                     <InlineStack align="space-between" blockAlign="start">
                       <InlineStack gap="300" blockAlign="start">
                         <Thumbnail
-                          source={getProductImageUrl(item.product.imageId)}
+                          source={getLocalProductImage(item.product.name, item.product.category, item.product.id)}
                           alt={item.product.name}
                           size="small"
                         />
@@ -332,7 +315,7 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
               </BlockStack>
             </BlockStack>
           </Modal.Section>
-          
+
           <Modal.Section>
             <InlineStack gap="200">
               {selectedOrder.paymentStatus !== 'paid' && (
