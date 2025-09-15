@@ -15,6 +15,7 @@ import {
 } from '@shopify/polaris';
 import { useQuery } from '@tanstack/react-query';
 import type { Order, PaginatedResponse } from '../../../shared/types';
+import { IMAGE_GENERATORS } from '../../../data/mock/constants';
 
 interface OrdersTableProps {
   companyId?: string;
@@ -70,6 +71,11 @@ function formatShortDate(date: Date): string {
     month: 'short',
     day: 'numeric'
   }).format(new Date(date));
+}
+
+function getProductImageUrl(imageId?: string) {
+  if (!imageId) return '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+  return IMAGE_GENERATORS.local(imageId);
 }
 
 export default function OrdersTable({ companyId }: OrdersTableProps) {
@@ -188,7 +194,7 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
                       {order.items.slice(0, 4).map((item, index) => (
                         <Thumbnail
                           key={index}
-                          source={item.product.imageUrl}
+                          source={getProductImageUrl(item.product.imageId)}
                           alt={item.product.name}
                           size="medium"
                         />
@@ -301,7 +307,7 @@ export default function OrdersTable({ companyId }: OrdersTableProps) {
                     <InlineStack align="space-between" blockAlign="start">
                       <InlineStack gap="300" blockAlign="start">
                         <Thumbnail
-                          source={item.product.imageUrl}
+                          source={getProductImageUrl(item.product.imageId)}
                           alt={item.product.name}
                           size="small"
                         />

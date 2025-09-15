@@ -16,6 +16,7 @@ import {
 } from '@shopify/polaris';
 import { useQuery } from '@tanstack/react-query';
 import type { Quote, PaginatedResponse } from '../../../shared/types';
+import { IMAGE_GENERATORS } from '../../../data/mock/constants';
 
 interface QuotesTableProps {
   companyId?: string;
@@ -52,6 +53,11 @@ function formatDate(date: Date): string {
     month: 'short',
     day: 'numeric'
   }).format(new Date(date));
+}
+
+function getProductImageUrl(imageId?: string) {
+  if (!imageId) return '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+  return IMAGE_GENERATORS.local(imageId);
 }
 
 export default function QuotesTable({ companyId }: QuotesTableProps) {
@@ -460,22 +466,43 @@ export default function QuotesTable({ companyId }: QuotesTableProps) {
                   {selectedQuote.items.map((item, index) => (
                     <Box key={index}>
                       <InlineStack align="space-between" blockAlign="start">
-                        <BlockStack gap="200">
-                          <Text as="p" variant="bodyMd" fontWeight="semibold">
-                            {item.product.name}
-                          </Text>
-                          <InlineStack gap="300">
-                            <Text as="p" variant="bodySm" tone="subdued">
-                              SKU: {item.product.sku}
+                        <InlineStack gap="400" blockAlign="start">
+                          {/* Product Image */}
+                          <Box>
+                            <img
+                              src={getProductImageUrl(item.product.imageId)}
+                              alt={item.product.name}
+                              style={{
+                                width: '60px',
+                                height: '60px',
+                                objectFit: 'cover',
+                                borderRadius: '8px',
+                                filter: 'blur(2px) brightness(1.1) saturate(0.9)'
+                              }}
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.src = '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+                              }}
+                            />
+                          </Box>
+                          {/* Product Details */}
+                          <BlockStack gap="200">
+                            <Text as="p" variant="bodyMd" fontWeight="semibold">
+                              {item.product.name}
                             </Text>
-                            <Text as="p" variant="bodySm" tone="subdued">
-                              Quantity: {item.quantity}
-                            </Text>
-                            <Text as="p" variant="bodySm" tone="subdued">
-                              Unit Price: {formatCurrency(item.totalPrice / item.quantity)}
-                            </Text>
-                          </InlineStack>
-                        </BlockStack>
+                            <InlineStack gap="300">
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                SKU: {item.product.sku}
+                              </Text>
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                Quantity: {item.quantity}
+                              </Text>
+                              <Text as="p" variant="bodySm" tone="subdued">
+                                Unit Price: {formatCurrency(item.totalPrice / item.quantity)}
+                              </Text>
+                            </InlineStack>
+                          </BlockStack>
+                        </InlineStack>
                         <Text as="p" variant="bodyLg" fontWeight="semibold">
                           {formatCurrency(item.totalPrice)}
                         </Text>
