@@ -87,6 +87,8 @@ export function DataFrameTable({
   const headings = visibleColumns.map(col => ({
     title: col.title,
     id: col.id,
+    sortable: col.sortable,
+    alignment: col.alignment
   }));
 
   // Handle sorting
@@ -171,10 +173,7 @@ export function DataFrameTable({
               allResourcesSelected ? 'All' : selectedResources.length
             }
             onSelectionChange={handleSelectionChange}
-            headings={headings.map((heading, index) => ({
-              ...heading,
-              sortable: visibleColumns[index]?.sortable
-            }))}
+            headings={headings}
             selectable={selectable}
             promotedBulkActions={promotedBulkActions}
             sortDirection={sortDirection}

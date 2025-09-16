@@ -124,20 +124,119 @@ Use conventional commits:
   - Applied blur effects for professional demo aesthetic
   - Performance significantly improved with local assets
 
-### 2025-09-15 - B2B Cart/Quote Workflow Restructuring (IN PROGRESS)
-- 🔄 **CURRENT TASK**: Restructuring cart system for proper B2B workflow
-  - **Issue**: Current system treats cart and quotes as separate parallel systems
-  - **Goal**: Cart should be staging area that converts to quotes for approval
-  - **Standard B2B Flow**: Add to Cart → Quote Builder → Submit for Approval → Supervisor Approval → Order
-- ⏭️ **NEXT STEPS**:
-  1. Restructure cartStore.ts to be quote-focused (QuoteBuilderStore)
-  2. Update calculateTotals function to use QuoteItem instead of CartItem
-  3. Rename ShoppingCart component to QuoteBuilder
-  4. Remove checkout concepts, add quote submission flow
-  5. Merge "Add to Cart" and "Add to Quote" into single action
-  6. Update navigation (cart icon → quote builder)
-  7. Add quote metadata fields (PO number, delivery date, notes)
-  8. Implement approval workflow for supervisors
+### 2025-09-16 - Enhanced Table System Implementation
+- ✅ **ENTERPRISE TABLE SYSTEM**: Built unified DataFrameTable with enterprise features
+  - **Pagination**: Configurable page sizes (10, 25, 50, 100) with navigation controls
+  - **Column Management**: Show/hide columns dynamically with visibility toggles
+  - **Export Functionality**: CSV, XLSX, JSON export with configurable formats
+  - **Interactive Sorting**: Visual caret indicators with click-to-sort functionality
+  - **Custom Rendering**: Support for formatted cells, colors, and custom components
+  - **Row Interactions**: Clickable rows with custom handlers
+  - **Performance Optimized**: Proper memoization and efficient data handling
+- ✅ **COMPONENT ARCHITECTURE**: Created reusable table components
+  - `DataFrameTable/`: Main table component with all enterprise features
+  - `TableHeader`: Export buttons and column visibility controls
+  - `TablePagination`: Navigation with page size selection
+  - `TableFilters`: Standardized filter components
+  - `TableMetrics`: Summary cards for table data
+- ✅ **DEMO IMPLEMENTATION**: Table Demo page showcases all features
+  - 47 sample products with realistic B2B data
+  - All sorting, pagination, export, and column features working
+  - Available at `/merchant-portal/table-demo`
+- ✅ **TYPESCRIPT INTEGRATION**: Comprehensive type definitions
+  - Enhanced interfaces for pagination, column visibility, export options
+  - Proper typing for all table configuration options
+  - Type-safe column definitions with custom render functions
+- 🎯 **READY FOR MIGRATION**: Foundation set for unifying existing tables
+  - QuotesTable, UsersTable, OrdersTable can migrate to enhanced system
+  - 90% reduction in table-related code duplication expected
+  - Consistent UX across all admin interfaces
+
+### 2025-09-15 - B2B Cart/Quote Workflow Restructuring (PAUSED)
+- ⏸️ **PAUSED**: Cart system restructuring to focus on table system enhancement
+- 🎯 **NEXT PHASE**: Will resume after table system migration is complete
+
+---
+
+## Enhanced Table System Guide
+
+### DataFrameTable Usage
+The enhanced DataFrameTable provides enterprise-grade functionality with minimal setup:
+
+```tsx
+import { DataFrameTable, type TableColumn } from '../../../shared/components/tables';
+
+// Define columns with type safety
+const columns: TableColumn[] = [
+  {
+    id: 'name',
+    title: 'Product Name',
+    sortable: true,
+    render: (value) => <strong>{value as string}</strong>
+  },
+  {
+    id: 'price',
+    title: 'Price',
+    sortable: true,
+    alignment: 'right',
+    render: (value) => `$${(value as number).toFixed(2)}`
+  }
+];
+
+// Configure pagination
+const pagination = {
+  currentPage: 1,
+  pageSize: 25,
+  totalItems: data.length,
+  onPageChange: setCurrentPage,
+  onPageSizeChange: setPageSize
+};
+
+// Set up column visibility
+const columnVisibility = {
+  hiddenColumns: [],
+  onColumnVisibilityChange: setHiddenColumns
+};
+
+// Configure export
+const exportOptions = {
+  formats: ['csv', 'xlsx', 'json'],
+  filename: 'export-data',
+  onExport: (format, data) => handleExport(format, data)
+};
+
+// Use the table
+<DataFrameTable
+  data={data}
+  columns={columns}
+  idField="id"
+  pagination={pagination}
+  columnVisibility={columnVisibility}
+  exportOptions={exportOptions}
+  sortBy={sortBy}
+  sortDirection={sortDirection}
+  onSort={handleSort}
+  onRowClick={handleRowClick}
+/>
+```
+
+### Table Components Available
+- `DataFrameTable`: Main enterprise table with all features
+- `TableHeader`: Export and column visibility controls
+- `TablePagination`: Page navigation with size selection
+- `TableFilters`: Standardized filter components
+- `TableMetrics`: Summary cards for table data
+
+### Migration Pattern
+When migrating existing tables:
+1. Replace ResourceList/IndexTable with DataFrameTable
+2. Convert column definitions to TableColumn interface
+3. Add pagination, export, and column visibility as needed
+4. Remove custom table logic in favor of built-in features
+5. Update imports to use shared table components
+
+### Demo Reference
+See `/merchant-portal/table-demo` for complete implementation example with all features.
 
 ---
 
@@ -146,6 +245,7 @@ Use conventional commits:
 **When working on this project:**
 1. Always run `npm run lint && npm run typecheck` after changes
 2. Use modern Polaris components (BlockStack, InnerStack, NOT Stack)
-3. Keep components focused and create shared components in `src/shared/`
-4. Follow the established file structure
-5. Update this file when making significant architectural decisions
+3. **Use DataFrameTable** for any new table implementations
+4. Keep components focused and create shared components in `src/shared/`
+5. Follow the established file structure
+6. Update this file when making significant architectural decisions
