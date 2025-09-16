@@ -14,6 +14,7 @@ import { QuotesTable, OrdersTable } from '../../shared/components/tables';
 import { AppFrame } from '../../shared/components/layout';
 import CompaniesPage from './pages/CompaniesPage';
 import CustomersPage from './pages/CustomersPage';
+import TableDemoPage from './pages/TableDemoPage';
 
 function MerchantPortalHome() {
   return (
@@ -197,6 +198,7 @@ export default function MerchantPortalApp() {
         <Route path="markets" element={<Page title="Markets"><Card><Text>Markets page</Text></Card></Page>} />
         <Route path="finance" element={<Page title="Finance"><Card><Text>Finance page</Text></Card></Page>} />
         <Route path="analytics" element={<Page title="Analytics"><Card><Text>Analytics page</Text></Card></Page>} />
+        <Route path="table-demo" element={<TableDemoPage />} />
         <Route path="settings" element={<Page title="Settings"><Card><Text>Settings page</Text></Card></Page>} />
         <Route path="quotes/*" element={<QuotesPage />} />
         <Route path="users" element={<UsersPage />} />

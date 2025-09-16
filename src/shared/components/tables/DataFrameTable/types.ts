@@ -32,6 +32,42 @@ export interface BulkAction {
   onAction: (selectedIds: string[]) => void;
 }
 
+export interface PaginationOptions {
+  currentPage: number;
+  pageSize: number;
+  totalItems: number;
+  pageSizeOptions?: number[];
+  onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
+}
+
+export interface ColumnVisibilityOptions {
+  hiddenColumns?: string[];
+  onColumnVisibilityChange?: (hiddenColumns: string[]) => void;
+}
+
+export interface ExportOptions {
+  formats?: ('csv' | 'xlsx' | 'json')[];
+  filename?: string;
+  onExport: (format: string, data: Record<string, unknown>[]) => void;
+}
+
+export interface SavedSearch {
+  id: string;
+  name: string;
+  filters: Record<string, unknown>;
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
+}
+
+export interface SavedSearchOptions {
+  savedSearches?: SavedSearch[];
+  activeSavedSearch?: string;
+  onSavedSearchApply?: (search: SavedSearch) => void;
+  onSavedSearchSave?: (name: string, filters: Record<string, unknown>) => void;
+  onSavedSearchDelete?: (searchId: string) => void;
+}
+
 export interface DataFrameTableProps {
   // Data
   data: Record<string, unknown>[];
@@ -61,6 +97,25 @@ export interface DataFrameTableProps {
   sortBy?: string;
   sortDirection?: 'asc' | 'desc';
   onSort?: (column: string, direction: 'asc' | 'desc') => void;
+
+  // Pagination
+  pagination?: PaginationOptions;
+
+  // Column visibility
+  columnVisibility?: ColumnVisibilityOptions;
+
+  // Export functionality
+  exportOptions?: ExportOptions;
+
+  // Saved searches
+  savedSearches?: SavedSearchOptions;
+
+  // Table density
+  density?: 'compact' | 'comfortable' | 'spacious';
+
+  // View options
+  viewType?: 'table' | 'list' | 'cards';
+  onViewTypeChange?: (viewType: 'table' | 'list' | 'cards') => void;
 
   // Loading state
   loading?: boolean;

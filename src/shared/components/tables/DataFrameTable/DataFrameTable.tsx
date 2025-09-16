@@ -4,16 +4,16 @@ import {
   IndexTable,
   BlockStack,
   InlineStack,
-  Button,
   Text,
   EmptyState,
   Spinner,
-  ButtonGroup,
   Box,
   useIndexResourceState
 } from '@shopify/polaris';
 import { TableFilters } from './TableFilters';
 import { TableMetrics } from './TableMetrics';
+import { TableHeader } from './TableHeader';
+import { TablePagination } from './TablePagination';
 import type { DataFrameTableProps } from './types';
 
 export function DataFrameTable({
@@ -32,6 +32,10 @@ export function DataFrameTable({
   sortBy,
   sortDirection = 'asc',
   onSort,
+  pagination,
+  columnVisibility,
+  exportOptions,
+  // density = 'comfortable', // TODO: Implement density feature
   loading = false,
   emptyState
 }: DataFrameTableProps) {
@@ -41,13 +45,28 @@ export function DataFrameTable({
   const currentSelectedIds = onSelectionChange ? selectedIds : internalSelectedIds;
   const setCurrentSelectedIds = onSelectionChange || setInternalSelectedIds;
 
-  // Prepare resources for IndexTable
+  // Filter visible columns based on column visibility settings
+  const visibleColumns = useMemo(() => {
+    const hiddenColumns = columnVisibility?.hiddenColumns || [];
+    return columns.filter(col => !hiddenColumns.includes(col.id));
+  }, [columns, columnVisibility]);
+
+  // Paginate data if pagination is enabled
+  const paginatedData = useMemo(() => {
+    if (!pagination) return data;
+
+    const startIndex = (pagination.currentPage - 1) * pagination.pageSize;
+    const endIndex = startIndex + pagination.pageSize;
+    return data.slice(startIndex, endIndex);
+  }, [data, pagination]);
+
+  // Prepare resources for IndexTable using paginated data
   const resources = useMemo(() => {
-    return data.map(row => ({
+    return paginatedData.map(row => ({
       id: row[idField] as string,
       ...row
     }));
-  }, [data, idField]);
+  }, [paginatedData, idField]);
 
   // Use Polaris index resource state for selection
   const resourceIDResolver = useCallback((resource: Record<string, unknown>) => {
@@ -64,22 +83,19 @@ export function DataFrameTable({
     onSelectionChange: setCurrentSelectedIds,
   });
 
-  // Convert columns to headings
-  const headings = columns.map(col => ({
+  // Convert visible columns to headings
+  const headings = visibleColumns.map(col => ({
     title: col.title,
     id: col.id,
   }));
 
   // Handle sorting
   const handleSort = useCallback((headingIndex: number, direction: 'asc' | 'desc') => {
-    const column = columns[headingIndex];
+    const column = visibleColumns[headingIndex];
     if (column && onSort) {
       onSort(column.id, direction);
     }
-  }, [columns, onSort]);
-
-  // Bulk actions
-  const showBulkActions = selectable && selectedResources.length > 0 && bulkActions.length > 0;
+  }, [visibleColumns, onSort]);
 
   // Bulk action handler
   const promotedBulkActions = bulkActions.map(action => ({
@@ -122,6 +138,14 @@ export function DataFrameTable({
       {/* Metrics Section */}
       {metrics.length > 0 && <TableMetrics metrics={metrics} />}
 
+      {/* Table Header with Export and Column Visibility */}
+      <TableHeader
+        columns={columns}
+        exportOptions={exportOptions}
+        columnVisibility={columnVisibility}
+        data={data}
+      />
+
       {/* Main Table Card */}
       <Card padding="0">
         <BlockStack gap="0">
@@ -149,12 +173,12 @@ export function DataFrameTable({
             onSelectionChange={handleSelectionChange}
             headings={headings.map((heading, index) => ({
               ...heading,
-              sortable: columns[index]?.sortable
+              sortable: visibleColumns[index]?.sortable
             }))}
             selectable={selectable}
             promotedBulkActions={promotedBulkActions}
             sortDirection={sortDirection}
-            sortColumnIndex={sortBy ? columns.findIndex(col => col.id === sortBy) : undefined}
+            sortColumnIndex={sortBy ? visibleColumns.findIndex(col => col.id === sortBy) : undefined}
             onSort={handleSort}
           >
             {resources.map((resource, index) => (
@@ -165,7 +189,7 @@ export function DataFrameTable({
                 position={index}
                 onClick={() => onRowClick && onRowClick(resource.id, resource)}
               >
-                {columns.map((column) => {
+                {visibleColumns.map((column) => {
                   const value = resource[column.id];
                   const cellContent = column.render ? column.render(value, resource) : (value || '—');
 
@@ -178,6 +202,11 @@ export function DataFrameTable({
               </IndexTable.Row>
             ))}
           </IndexTable>
+
+          {/* Pagination */}
+          {pagination && (
+            <TablePagination pagination={pagination} />
+          )}
         </BlockStack>
       </Card>
     </BlockStack>

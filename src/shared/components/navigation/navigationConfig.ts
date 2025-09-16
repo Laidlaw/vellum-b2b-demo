@@ -114,6 +114,12 @@ export function createMainNavigationItems(
           path: '/merchant-portal/analytics',
           selected: currentPath.startsWith('/merchant-portal/analytics'),
         },
+        {
+          label: 'Table Demo',
+          icon: ContentIcon,
+          path: '/merchant-portal/table-demo',
+          selected: currentPath.startsWith('/merchant-portal/table-demo'),
+        },
       ];
 
     case 'customer-admin':
@@ -232,14 +238,14 @@ export function createHorizontalNavigation(
   if (appType === 'customer-admin') {
     return [
       {
-        label: 'Shop',
-        path: '/storefront',
-        active: currentPath.startsWith('/storefront')
+        label: 'Company',
+        path: '/customer-admin/company',
+        active: currentPath.startsWith('/customer-admin/company')
       },
       {
-        label: 'Orders',
-        path: '/customer-admin/orders',
-        active: currentPath.startsWith('/customer-admin/orders')
+        label: 'Team',
+        path: '/customer-admin/users',
+        active: currentPath.startsWith('/customer-admin/users')
       },
       {
         label: 'Quotes',
@@ -247,10 +253,10 @@ export function createHorizontalNavigation(
         active: currentPath.startsWith('/customer-admin/quotes')
       },
       {
-        label: 'Company',
-        path: '/customer-admin/company',
-        active: currentPath.startsWith('/customer-admin/company')
-      }
+        label: 'Orders',
+        path: '/customer-admin/orders',
+        active: currentPath.startsWith('/customer-admin/orders')
+      },
     ];
   }
 
