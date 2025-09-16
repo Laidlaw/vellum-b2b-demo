@@ -19,6 +19,7 @@ import {
 import { DeleteIcon, EditIcon, ContractIcon } from '@shopify/polaris-icons';
 import { useCart } from '../hooks';
 import { formatCurrency, validateQuantity } from '../utils';
+import { getLocalProductImage } from '../utils/localImages';
 import type { CartItem } from '../types';
 
 interface QuoteBuilderProps {
@@ -89,7 +90,7 @@ export function QuoteBuilder({ onSubmitQuote, onContinueShopping }: QuoteBuilder
         id={productId}
         media={
           <Thumbnail
-            source={item.product.imageId}
+            source={getLocalProductImage(item.product.name, item.product.category, item.product.id)}
             alt={item.product.name}
             size="medium"
           />

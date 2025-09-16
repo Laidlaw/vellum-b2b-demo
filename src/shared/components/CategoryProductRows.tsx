@@ -114,7 +114,7 @@ export function CategoryProductRows({
                             }}
                             onError={(e) => {
                               const target = e.target as HTMLImageElement;
-                              target.src = '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+                              target.src = '/products/cordless-drill.jpg';
                             }}
                           />
                           {volumeDiscount && (

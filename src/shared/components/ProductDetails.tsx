@@ -45,7 +45,7 @@ export function ProductDetails({
 
   // Get product image URL from imageId
   const getProductImageUrl = (imageId?: string) => {
-    if (!imageId) return '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    if (!imageId) return '/products/cordless-drill.jpg';
     return IMAGE_GENERATORS.local(imageId);
   };
 

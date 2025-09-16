@@ -19,42 +19,42 @@ export const IMAGE_CONFIG = {
 
 // Local product images from public/products/ (deployed via public directory)
 export const PRODUCT_IMAGES = {
-  'img-001': 'angle-grinder-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-002': 'circular-saw-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-003': 'come-along-cable-puller-professional-product-photo-white-background-studio-lighting-commercial-photo.jpg',
-  'img-004': 'composite-toe-safety-boots-professional-product-photo-white-background-studio-lighting-commercial-ph.jpg',
-  'img-005': 'cordless-drill-kit-professional-product-photo-white-background-studio-lighting-commercial-photograph.jpg',
-  'img-006': 'cut-resistant-work-gloves-heavy-duty-5-fingers-professional-product-photo-blurry-white-background-st.jpg',
-  'img-007': 'cut-resistant-work-gloves-think-5-fingers-professional-product-photo-white-background-studio-lightin.jpg',
-  'img-008': 'digital-multimeter-professional-product-photo-white-background-studio-lighting-commercial-photograph.jpg',
-  'img-009': 'exit-sign-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-010': 'fconveyor-belt-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-011': 'first-aid-kit-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-012': 'forklift-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-013': 'hammer-drill-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-014': 'hand-truck-heavy-duty-professional-product-photo-white-background-studio-lighting-commercial-photogr.jpg',
-  'img-015': 'hard-hat-with-led-light-professional-product-photo-white-background-studio-lighting-commercial-photo.jpg',
-  'img-016': 'high-visibility-safety-vest-professional-product-photo-white-background-studio-lighting-commercial-p.jpg',
-  'img-017': 'hydraulic-floor-jack-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg',
-  'img-018': 'impact-socket-set-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-019': 'industrial-wire-shelving-professional-product-photo-white-background-studio-lighting-commercial-phot.jpg',
-  'img-020': 'led-work-light-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-021': 'mig-welder-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-022': 'oscilloscope-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-023': 'platform-cart-heavy-duty-professional-product-photo-white-background-studio-lighting-commercial-phot.jpg',
-  'img-024': 'portable-generator-professional-product-photo-white-background-studio-lighting-commercial-photograph.jpg',
-  'img-025': 'pressure-washer-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-026': 'safety-bulky-eyewear-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg',
-  'img-027': 'steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg',
-  'img-028': 'torque-wrench-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg',
-  'img-029': 'welding-helmet-professional-product-photo-white-background-studio-lighting-commercial-photography.jpg'
+  'img-001': 'angle-grinder.jpg',
+  'img-002': 'circular-saw.jpg',
+  'img-003': 'cable-puller.jpg',
+  'img-004': 'composite-toe-safety-boots.jpg',
+  'img-005': 'cordless-drill.jpg',
+  'img-006': 'heavy-glove.jpg',
+  'img-007': 'vinyl-glove.jpg',
+  'img-008': 'digital-multimeter.jpg',
+  'img-009': 'exit-sign.jpg',
+  'img-010': 'conveyor-belt.jpg',
+  'img-011': 'first-aid-kit.jpg',
+  'img-012': 'forklift.jpg',
+  'img-013': 'hammer-drill.jpg',
+  'img-014': 'hand-truck.jpg',
+  'img-015': 'hard-hat-with-led-light.jpg',
+  'img-016': 'safety-vest.jpg',
+  'img-017': 'hydraulic-floor-jack.jpg',
+  'img-018': 'socket-set.jpg',
+  'img-019': 'shelving.jpg',
+  'img-020': 'led-work-light.jpg',
+  'img-021': 'welder.jpg',
+  'img-022': 'oscilloscope.jpg',
+  'img-023': 'platform-cart.jpg',
+  'img-024': 'portable-generator.jpg',
+  'img-025': 'pressure-washer.jpg',
+  'img-026': 'goggles.jpg',
+  'img-027': 'boot-steel-toe.jpg',
+  'img-028': 'wrench.jpg',
+  'img-029': 'helmet-welding.jpg'
 } as const;
 
 export const IMAGE_GENERATORS = {
   local: (imageId: string) => {
     const filename = PRODUCT_IMAGES[imageId as keyof typeof PRODUCT_IMAGES];
     // Use public directory paths for proper deployment
-    return filename ? `/products/${filename}` : '/products/steel-toe-work-boots-professional-product-photo-white-background-studio-lighting-commercial-photogra.jpg';
+    return filename ? `/products/${filename}` : '/products/cordless-drill.jpg';
   },
 
   // Disabled external generators to prevent network requests

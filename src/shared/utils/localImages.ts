@@ -1,51 +1,80 @@
 // Local B2B Product Image System
 // Uses local assets stored in public/products/ for deployment compatibility
 
-// Generic B2B product image filenames
+// Generic B2B product image filenames - mapped to actual files in public/products/
 export const LOCAL_PRODUCT_IMAGES = {
   // Power Tools
-  'drill': 'drill.jpg',
-  'saw': 'saw.jpg',
-  'sander': 'sander.jpg',
-  'grinder': 'grinder.jpg',
+  'drill': 'cordless-drill.jpg',
+  'cordless': 'cordless-drill.jpg',
+  'hammer': 'hammer-drill.jpg',
+  'saw': 'circular-saw.jpg',
+  'circular': 'circular-saw.jpg',
+  'grinder': 'angle-grinder.jpg',
+  'angle': 'angle-grinder.jpg',
   'welder': 'welder.jpg',
-  'generator': 'generator.jpg',
+  'welding': 'helmet-welding.jpg',
+  'generator': 'portable-generator.jpg',
+  'portable': 'portable-generator.jpg',
+
+  // Power Equipment
+  'pressure': 'pressure-washer.jpg',
+  'washer': 'pressure-washer.jpg',
 
   // Hand Tools
-  'hammer': 'hammer.jpg',
   'wrench': 'wrench.jpg',
-  'screwdriver': 'screwdriver.jpg',
-  'pliers': 'pliers.jpg',
-  'toolkit': 'toolkit.jpg',
+  'socket': 'socket-set.jpg',
+  'jack': 'hydraulic-floor-jack.jpg',
+  'hydraulic': 'hydraulic-floor-jack.jpg',
 
   // Safety Equipment
-  'helmet': 'helmet.jpg',
-  'gloves': 'gloves.jpg',
+  'helmet': 'helmet-welding.jpg',
+  'hat': 'hard-hat-with-led-light.jpg',
+  'hard-hat': 'hard-hat-with-led-light.jpg',
+  'gloves': 'heavy-glove.jpg',
+  'heavy': 'heavy-glove.jpg',
+  'vinyl': 'vinyl-glove.jpg',
   'goggles': 'goggles.jpg',
-  'vest': 'vest.jpg',
-  'boots': 'boots.jpg',
-  'mask': 'mask.jpg',
+  'safety': 'safety-vest.jpg',
+  'vest': 'safety-vest.jpg',
+  'boots': 'boot-steel-toe.jpg',
+  'steel-toe': 'boot-steel-toe.jpg',
+  'composite-toe': 'composite-toe-safety-boots.jpg',
 
   // Testing/Measurement
-  'meter': 'meter.jpg',
-  'gauge': 'gauge.jpg',
-  'scale': 'scale.jpg',
+  'meter': 'digital-multimeter.jpg',
+  'multimeter': 'digital-multimeter.jpg',
+  'digital': 'digital-multimeter.jpg',
+  'oscilloscope': 'oscilloscope.jpg',
 
-  // Storage
-  'cabinet': 'cabinet.jpg',
-  'toolbox': 'toolbox.jpg',
-  'shelf': 'shelf.jpg',
+  // Storage & Transport
+  'shelf': 'shelving.jpg',
+  'shelving': 'shelving.jpg',
+  'cart': 'platform-cart.jpg',
+  'platform': 'platform-cart.jpg',
+  'truck': 'hand-truck.jpg',
+  'hand-truck': 'hand-truck.jpg',
+  'forklift': 'forklift.jpg',
+  'conveyor': 'conveyor-belt.jpg',
+  'belt': 'conveyor-belt.jpg',
 
   // Lighting/Signs
-  'light': 'light.jpg',
-  'sign': 'sign.jpg',
-  'flashlight': 'flashlight.jpg'
+  'light': 'led-work-light.jpg',
+  'led': 'led-work-light.jpg',
+  'work': 'led-work-light.jpg',
+  'sign': 'exit-sign.jpg',
+  'exit': 'exit-sign.jpg',
+
+  // Safety & First Aid
+  'first-aid': 'first-aid-kit.jpg',
+  'puller': 'cable-puller.jpg',
+  'cable': 'cable-puller.jpg'
 } as const;
 
 // Category-based image mapping
 const CATEGORY_IMAGE_MAP = {
   'Safety Equipment': ['helmet', 'gloves', 'goggles', 'vest', 'boots', 'mask'],
   'Power Tools': ['drill', 'saw', 'sander', 'grinder', 'welder', 'generator'],
+  'Power Equipment': ['generator', 'welder', 'drill', 'grinder', 'saw'],
   'Hand Tools': ['hammer', 'wrench', 'screwdriver', 'pliers', 'toolkit'],
   'Testing Equipment': ['meter', 'gauge', 'scale'],
   'Test Equipment': ['meter', 'gauge', 'scale'],
@@ -56,7 +85,7 @@ const CATEGORY_IMAGE_MAP = {
 } as const;
 
 // Fallback generic product image
-const FALLBACK_IMAGE = 'generic-product.jpg';
+const FALLBACK_IMAGE = 'cordless-drill.jpg';
 
 /**
  * Get appropriate local image for a product
@@ -99,8 +128,8 @@ export function getLocalImageProps(productName: string, category: string, produc
       width: '100%',
       height: '100%',
       objectFit: 'cover' as const,
-      filter: 'blur(2px) brightness(1.1) saturate(0.9)',
-      opacity: 0.95
+      //filter: 'blur(2px) brightness(1.1) saturate(0.9)',
+      //opacity: 0.95
     },
     onError: (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
       // Fallback to generic product image if specific image fails
@@ -126,9 +155,8 @@ function hashString(str: string): number {
 }
 
 /**
- * List of required image files that should be added to src/assets/products/
+ * List of required image files that should be in public/products/
  */
 export const REQUIRED_IMAGE_FILES = [
-  ...Object.values(LOCAL_PRODUCT_IMAGES),
-  FALLBACK_IMAGE
+  ...new Set([...Object.values(LOCAL_PRODUCT_IMAGES), FALLBACK_IMAGE])
 ];
