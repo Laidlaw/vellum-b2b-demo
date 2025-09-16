@@ -89,7 +89,7 @@ export function QuoteBuilder({ onSubmitQuote, onContinueShopping }: QuoteBuilder
         id={productId}
         media={
           <Thumbnail
-            source={item.product.imageUrl}
+            source={item.product.imageId}
             alt={item.product.name}
             size="medium"
           />

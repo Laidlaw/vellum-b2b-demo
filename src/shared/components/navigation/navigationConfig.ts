@@ -15,6 +15,7 @@ import {
   ContractIcon,
 } from '@shopify/polaris-icons';
 import type { NavigationItemData } from './NavigationItem';
+import type { HorizontalNavItem } from '../layout/CommerceTopBar';
 
 export interface NavigationSection {
   title?: string;
@@ -219,4 +220,76 @@ export function createNavigationSections(
   });
 
   return sections;
+}
+
+/**
+ * Create horizontal navigation items for commerce layout
+ */
+export function createHorizontalNavigation(
+  appType: AppType,
+  currentPath: string
+): HorizontalNavItem[] {
+  if (appType === 'customer-admin') {
+    return [
+      {
+        label: 'Shop',
+        path: '/storefront',
+        active: currentPath.startsWith('/storefront')
+      },
+      {
+        label: 'Orders',
+        path: '/customer-admin/orders',
+        active: currentPath.startsWith('/customer-admin/orders')
+      },
+      {
+        label: 'Quotes',
+        path: '/customer-admin/quotes',
+        active: currentPath.startsWith('/customer-admin/quotes')
+      },
+      {
+        label: 'Company',
+        path: '/customer-admin/company',
+        active: currentPath.startsWith('/customer-admin/company')
+      }
+    ];
+  }
+
+  if (appType === 'merchant-portal') {
+    return [
+      {
+        label: 'Dashboard',
+        path: '/merchant-portal',
+        active: currentPath === '/merchant-portal'
+      },
+      {
+        label: 'Orders',
+        path: '/merchant-portal/orders',
+        active: currentPath.startsWith('/merchant-portal/orders')
+      },
+      {
+        label: 'Customers',
+        path: '/merchant-portal/customers',
+        active: currentPath.startsWith('/merchant-portal/customers')
+      },
+      {
+        label: 'Products',
+        path: '/merchant-portal/products',
+        active: currentPath.startsWith('/merchant-portal/products')
+      }
+    ];
+  }
+
+  // Storefront - simple navigation
+  return [
+    {
+      label: 'Products',
+      path: '/storefront',
+      active: currentPath === '/storefront'
+    },
+    {
+      label: 'Quote Builder',
+      path: '/storefront/quote-builder',
+      active: currentPath.startsWith('/storefront/quote-builder')
+    }
+  ];
 }

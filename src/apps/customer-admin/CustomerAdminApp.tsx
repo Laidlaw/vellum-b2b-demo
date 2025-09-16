@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
 import {
   Page,
   Card,
@@ -10,6 +10,7 @@ import {
 import { Link } from 'react-router-dom';
 import { QuotesTable, OrdersTable } from '../../shared/components/tables';
 import { AppFrame } from '../../shared/components/layout';
+import { createHorizontalNavigation } from '../../shared/components/navigation';
 import UsersPage from './pages/UsersPage';
 import CompanyPage from './pages/CompanyPage';
 import InvoicesPage from './pages/InvoicesPage';
@@ -77,11 +78,22 @@ function OrdersPage() {
 
 
 export default function CustomerAdminApp() {
+  const location = useLocation();
+
   const currentUser = {
     name: "Sarah Chen",
     detail: "Acme Industrial Solutions",
     initials: "SC"
   };
+
+  const companyAddress = {
+    street: "314 Arthur Drive",
+    city: "New York",
+    state: "NY",
+    zip: "10001"
+  };
+
+  const horizontalNavItems = createHorizontalNavigation('customer-admin', location.pathname);
 
   const handleUserLogout = () => {
     console.log('User logout');
@@ -91,6 +103,10 @@ export default function CustomerAdminApp() {
     <AppFrame
       appType="customer-admin"
       currentUser={currentUser}
+      layoutStyle="commerce"
+      companyName="B2BPaymentsPlus"
+      companyAddress={companyAddress}
+      horizontalNavItems={horizontalNavItems}
       onUserLogout={handleUserLogout}
     >
       <Routes>
