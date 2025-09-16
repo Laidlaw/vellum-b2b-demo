@@ -1,12 +1,16 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Page, Card, BlockStack } from '@shopify/polaris';
 import {
   DataFrameTable,
   type TableColumn,
   type PaginationOptions,
   type ColumnVisibilityOptions,
-  type ExportOptions
+  type ExportOptions,
+  type SearchOptions,
+  type QuickFiltersOptions,
+  type ActiveQuickFilter
 } from '../../../shared/components/tables';
+import { exportData } from '../../../shared/utils/table';
 
 // Mock data for demo
 const DEMO_DATA = Array.from({ length: 47 }, (_, index) => ({
@@ -25,8 +29,8 @@ export default function TableDemoPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<string>('name');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeQuickFilters, setActiveQuickFilters] = useState<ActiveQuickFilter[]>([]);
 
   // Define table columns
   const columns: TableColumn[] = [
@@ -101,26 +105,45 @@ export default function TableDemoPage() {
     }
   ];
 
-  // Sort data
-  const sortedData = useMemo(() => {
-    const sorted = [...DEMO_DATA].sort((a, b) => {
-      const aValue = a[sortBy as keyof typeof a];
-      const bValue = b[sortBy as keyof typeof b];
 
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortDirection === 'asc'
-          ? aValue.localeCompare(bValue)
-          : bValue.localeCompare(aValue);
+  // Search configuration
+  const search: SearchOptions = {
+    searchTerm,
+    placeholder: 'Search products by name, SKU, category, vendor...',
+    onSearch: setSearchTerm,
+    onClear: () => setSearchTerm(''),
+    enabled: true
+  };
+
+  // Quick filters configuration
+  const quickFilters: QuickFiltersOptions = {
+    filters: [
+      {
+        id: 'category',
+        label: 'Category',
+        field: 'category',
+        options: [],
+        placeholder: 'All categories'
+      },
+      {
+        id: 'status',
+        label: 'Status',
+        field: 'status',
+        options: [],
+        placeholder: 'All statuses'
+      },
+      {
+        id: 'vendor',
+        label: 'Vendor',
+        field: 'vendor',
+        options: [],
+        placeholder: 'All vendors'
       }
-
-      if (typeof aValue === 'number' && typeof bValue === 'number') {
-        return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
-      }
-
-      return 0;
-    });
-    return sorted;
-  }, [sortBy, sortDirection]);
+    ],
+    activeFilters: activeQuickFilters,
+    onFiltersChange: setActiveQuickFilters,
+    onClearAll: () => setActiveQuickFilters([])
+  };
 
   // Pagination configuration
   const pagination: PaginationOptions = {
@@ -140,21 +163,34 @@ export default function TableDemoPage() {
     onColumnVisibilityChange: setHiddenColumns
   };
 
-  // Export configuration
+  // Export configuration - now with real functionality
   const exportOptions: ExportOptions = {
-    formats: ['csv', 'xlsx', 'json'],
+    formats: ['csv', 'json'],
     filename: 'products-export',
     onExport: (format: string, data) => {
-      console.log(`Exporting ${data.length} items as ${format}`);
-      // In a real app, this would trigger actual export logic
-      alert(`Would export ${data.length} items as ${format.toUpperCase()}`);
+      try {
+        exportData(data, format as 'csv' | 'json', {
+          filename: 'products-export',
+          includeHeaders: true,
+          columnMapping: {
+            id: 'Product ID',
+            name: 'Product Name',
+            sku: 'SKU',
+            category: 'Category',
+            price: 'Price ($)',
+            stock: 'Stock Quantity',
+            status: 'Status',
+            vendor: 'Vendor',
+            dateAdded: 'Date Added'
+          }
+        });
+      } catch (error) {
+        console.error('Export failed:', error);
+        alert(`Export failed: ${error}`);
+      }
     }
   };
 
-  const handleSort = (column: string, direction: 'asc' | 'desc') => {
-    setSortBy(column);
-    setSortDirection(direction);
-  };
 
   const handleRowClick = (id: string, row: Record<string, unknown>) => {
     console.log('Row clicked:', { id, row });
@@ -172,27 +208,29 @@ export default function TableDemoPage() {
             <div>
               <h3>Features Demonstrated:</h3>
               <ul>
-                <li><strong>Pagination:</strong> Navigate through 47 items with configurable page sizes</li>
-                <li><strong>Column Visibility:</strong> Hide/show columns using the "Columns" button</li>
-                <li><strong>Export:</strong> Export data in CSV, XLSX, or JSON formats</li>
-                <li><strong>Sorting:</strong> Click column headers to sort data</li>
-                <li><strong>Custom Rendering:</strong> See status colors, price formatting, and stock indicators</li>
-                <li><strong>Row Interaction:</strong> Click any row to see details</li>
+                <li><strong>🔍 Real-time Search:</strong> Search across all fields with debounced input</li>
+                <li><strong>🎛️ Quick Filters:</strong> Dropdown filters for category, status, and vendor with auto-generated options</li>
+                <li><strong>📄 Pagination:</strong> Navigate through 47 items with configurable page sizes (10, 25, 50, 100)</li>
+                <li><strong>👁️ Column Visibility:</strong> Hide/show columns using the "Columns" button</li>
+                <li><strong>📊 Real Export:</strong> Download actual CSV and JSON files</li>
+                <li><strong>🔄 Built-in Sorting:</strong> Click column headers to sort (no external state needed)</li>
+                <li><strong>🎨 Custom Rendering:</strong> Status colors, price formatting, and stock indicators</li>
+                <li><strong>🖱️ Row Interaction:</strong> Click any row to see details</li>
+                <li><strong>⚡ Performance:</strong> Optimized search, sort, and filter processing</li>
               </ul>
             </div>
           </BlockStack>
         </Card>
 
         <DataFrameTable
-          data={sortedData}
+          data={DEMO_DATA}
           columns={columns}
           idField="id"
+          search={search}
+          quickFilters={quickFilters}
           pagination={pagination}
           columnVisibility={columnVisibility}
           exportOptions={exportOptions}
-          sortBy={sortBy}
-          sortDirection={sortDirection}
-          onSort={handleSort}
           onRowClick={handleRowClick}
           emptyState={{
             title: 'No products found',

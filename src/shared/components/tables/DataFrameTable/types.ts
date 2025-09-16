@@ -68,6 +68,41 @@ export interface SavedSearchOptions {
   onSavedSearchDelete?: (searchId: string) => void;
 }
 
+export interface SearchOptions {
+  searchTerm?: string;
+  searchFields?: string[];
+  placeholder?: string;
+  enabled?: boolean;
+  onSearch?: (searchTerm: string) => void;
+  onClear?: () => void;
+}
+
+export interface QuickFilterOption {
+  label: string;
+  value: string;
+}
+
+export interface QuickFilter {
+  id: string;
+  label: string;
+  field: string;
+  options: QuickFilterOption[];
+  placeholder?: string;
+  allowMultiple?: boolean;
+}
+
+export interface ActiveQuickFilter {
+  filterId: string;
+  values: string[];
+}
+
+export interface QuickFiltersOptions {
+  filters: QuickFilter[];
+  activeFilters?: ActiveQuickFilter[];
+  onFiltersChange: (filters: ActiveQuickFilter[]) => void;
+  onClearAll?: () => void;
+}
+
 export interface DataFrameTableProps {
   // Data
   data: Record<string, unknown>[];
@@ -76,7 +111,13 @@ export interface DataFrameTableProps {
   // Identification
   idField: string;
 
-  // Filtering
+  // Search functionality
+  search?: SearchOptions;
+
+  // Quick dropdown filters
+  quickFilters?: QuickFiltersOptions;
+
+  // Tab filters
   filters?: TableFilter[];
   activeFilter?: string;
   onFilterChange?: (filterId: string) => void;

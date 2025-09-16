@@ -14,12 +14,17 @@ import { TableFilters } from './TableFilters';
 import { TableMetrics } from './TableMetrics';
 import { TableHeader } from './TableHeader';
 import { TablePagination } from './TablePagination';
+import { TableSearchField } from './TableSearchField';
+import { QuickFilters } from './QuickFilters';
+import { combineFilters } from '../../../utils/table';
 import type { DataFrameTableProps } from './types';
 
 export function DataFrameTable({
   data,
   columns,
   idField,
+  search,
+  quickFilters,
   filters = [],
   activeFilter = 'all',
   onFilterChange,
@@ -40,10 +45,20 @@ export function DataFrameTable({
   emptyState
 }: DataFrameTableProps) {
   const [internalSelectedIds, setInternalSelectedIds] = useState<string[]>([]);
+  const [internalSearchTerm, setInternalSearchTerm] = useState(search?.searchTerm || '');
+  const [internalSortBy, setInternalSortBy] = useState(sortBy || columns.find(col => col.sortable)?.id || undefined);
+  const [internalSortDirection, setInternalSortDirection] = useState<'asc' | 'desc'>(sortDirection || 'asc');
 
   // Use controlled or internal selection state
   const currentSelectedIds = onSelectionChange ? selectedIds : internalSelectedIds;
   const setCurrentSelectedIds = onSelectionChange || setInternalSelectedIds;
+
+  // Use controlled or internal search state
+  const currentSearchTerm = search?.onSearch ? (search.searchTerm || '') : internalSearchTerm;
+
+  // Use controlled or internal sort state
+  const currentSortBy = onSort ? sortBy : internalSortBy;
+  const currentSortDirection = onSort ? sortDirection : internalSortDirection;
 
   // Filter visible columns based on column visibility settings
   const visibleColumns = useMemo(() => {
@@ -51,14 +66,38 @@ export function DataFrameTable({
     return columns.filter(col => !hiddenColumns.includes(col.id));
   }, [columns, columnVisibility]);
 
-  // Paginate data if pagination is enabled
+  // Apply search, filtering, and sorting
+  const processedData = useMemo(() => {
+    // Convert QuickFilters to filter constraints
+    const quickFilterConstraints = quickFilters?.activeFilters?.map(activeFilter => {
+      const filter = quickFilters.filters.find(f => f.id === activeFilter.filterId);
+      return filter ? {
+        field: filter.field,
+        values: activeFilter.values
+      } : null;
+    }).filter(Boolean) || [];
+
+    return combineFilters(data, {
+      quickFilters: quickFilterConstraints.length > 0 ? quickFilterConstraints : undefined,
+      search: search?.enabled !== false && currentSearchTerm ? {
+        searchTerm: currentSearchTerm,
+        searchFields: search?.searchFields
+      } : undefined,
+      sort: currentSortBy ? {
+        column: currentSortBy,
+        direction: currentSortDirection
+      } : undefined
+    });
+  }, [data, quickFilters, currentSearchTerm, search?.enabled, search?.searchFields, currentSortBy, currentSortDirection]);
+
+  // Paginate processed data if pagination is enabled
   const paginatedData = useMemo(() => {
-    if (!pagination) return data;
+    if (!pagination) return processedData;
 
     const startIndex = (pagination.currentPage - 1) * pagination.pageSize;
     const endIndex = startIndex + pagination.pageSize;
-    return data.slice(startIndex, endIndex);
-  }, [data, pagination]);
+    return processedData.slice(startIndex, endIndex);
+  }, [processedData, pagination]);
 
   // Prepare resources for IndexTable using paginated data
   const resources = useMemo(() => {
@@ -94,10 +133,33 @@ export function DataFrameTable({
   // Handle sorting
   const handleSort = useCallback((headingIndex: number, direction: 'asc' | 'desc') => {
     const column = visibleColumns[headingIndex];
-    if (column && onSort) {
-      onSort(column.id, direction);
+    if (column) {
+      if (onSort) {
+        onSort(column.id, direction);
+      } else {
+        setInternalSortBy(column.id);
+        setInternalSortDirection(direction);
+      }
     }
   }, [visibleColumns, onSort]);
+
+  // Handle search
+  const handleSearch = useCallback((searchTerm: string) => {
+    if (search?.onSearch) {
+      search.onSearch(searchTerm);
+    } else {
+      setInternalSearchTerm(searchTerm);
+    }
+  }, [search]);
+
+  // Handle search clear
+  const handleSearchClear = useCallback(() => {
+    if (search?.onClear) {
+      search.onClear();
+    } else {
+      setInternalSearchTerm('');
+    }
+  }, [search]);
 
   // Bulk action handler
   const promotedBulkActions = bulkActions.map(action => ({
@@ -151,14 +213,40 @@ export function DataFrameTable({
       {/* Main Table Card */}
       <Card padding="0">
         <BlockStack gap="0">
-          {/* Filters */}
-          {filters.length > 0 && (
+          {/* Search and Filters */}
+          {(search?.enabled !== false || quickFilters || filters.length > 0) && (
             <Box padding="400" paddingBlockEnd="0">
-              <TableFilters
-                filters={filters}
-                activeFilter={activeFilter}
-                onFilterChange={onFilterChange || (() => {})}
-              />
+              <BlockStack gap="300">
+                {/* Quick Filters */}
+                {quickFilters && (
+                  <QuickFilters
+                    filters={quickFilters.filters}
+                    activeFilters={quickFilters.activeFilters}
+                    onFiltersChange={quickFilters.onFiltersChange}
+                    onClearAll={quickFilters.onClearAll}
+                    data={data}
+                  />
+                )}
+
+                {/* Search Field */}
+                {search?.enabled !== false && (
+                  <TableSearchField
+                    value={currentSearchTerm}
+                    placeholder={search?.placeholder}
+                    onSearch={handleSearch}
+                    onClear={handleSearchClear}
+                  />
+                )}
+
+                {/* Tab Filters */}
+                {filters.length > 0 && (
+                  <TableFilters
+                    filters={filters}
+                    activeFilter={activeFilter}
+                    onFilterChange={onFilterChange || (() => {})}
+                  />
+                )}
+              </BlockStack>
             </Box>
           )}
 
@@ -176,8 +264,8 @@ export function DataFrameTable({
             headings={headings}
             selectable={selectable}
             promotedBulkActions={promotedBulkActions}
-            sortDirection={sortDirection}
-            sortColumnIndex={sortBy ? visibleColumns.findIndex(col => col.id === sortBy) : undefined}
+            sortDirection={currentSortDirection}
+            sortColumnIndex={currentSortBy ? visibleColumns.findIndex(col => col.id === currentSortBy) : undefined}
             onSort={handleSort}
           >
             {resources.map((resource, index) => (

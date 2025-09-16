@@ -8,7 +8,7 @@ import {
   InlineStack
 } from '@shopify/polaris';
 import { Link } from 'react-router-dom';
-import { QuotesDataTable, OrdersTable } from '../../shared/components/tables';
+import { EnhancedQuotesTable, OrdersTable } from '../../shared/components/tables';
 import { AppFrame } from '../../shared/components/layout';
 import { createHorizontalNavigation } from '../../shared/components/navigation';
 import UsersPage from './pages/UsersPage';
@@ -63,7 +63,7 @@ function CustomerAdminHome() {
 function QuotesPage() {
   return (
     <Page title="Quotes" subtitle="Review and approve pending quotes from your team">
-      <QuotesDataTable />
+      <EnhancedQuotesTable />
     </Page>
   );
 }

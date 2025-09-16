@@ -1,6 +1,7 @@
 export * from './currency';
 export * from './dates';
 export * from './validation';
+export * from './table';
 
 export function classNames(...classes: (string | undefined | null | boolean)[]): string {
   return classes.filter(Boolean).join(' ');
