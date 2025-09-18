@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Page, Card, BlockStack } from '@shopify/polaris';
+import { Page, Card, BlockStack, Text, Badge, InlineStack, Box, Button } from '@shopify/polaris';
 import {
   DataFrameTable,
   type TableColumn,
@@ -8,7 +8,13 @@ import {
   type ExportOptions,
   type SearchOptions,
   type QuickFiltersOptions,
-  type ActiveQuickFilter
+  type ActiveQuickFilter,
+  type RowActionsConfig,
+  type RowBadge,
+  type BulkAction,
+  type DetailModalOptions,
+  type CellClickBehavior,
+  DEFAULT_ACTIONS
 } from '../../../shared/components/tables';
 import { exportData } from '../../../shared/utils/table';
 
@@ -31,24 +37,43 @@ export default function TableDemoPage() {
   const [hiddenColumns, setHiddenColumns] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeQuickFilters, setActiveQuickFilters] = useState<ActiveQuickFilter[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [data] = useState(DEMO_DATA);
+  const [cellClickBehavior, setCellClickBehavior] = useState<CellClickBehavior>('detail');
 
-  // Define table columns
+  // Action manager configuration (simplified - no handlers needed!)
+  const actionManager = {
+    navigate: (url: string) => {
+      console.log('Navigate to:', url);
+      alert(`Navigate to: ${url}`);
+    },
+    edit: (rowId: string, row: Record<string, unknown>) => {
+      console.log('Edit action:', { rowId, row });
+      alert(`Edit ${row.name}`);
+    }
+    // delete, activate, deactivate, duplicate handlers are provided by useTableActionManager
+  };
+
+  // Define table columns with refined features
   const columns: TableColumn[] = [
     {
       id: 'name',
-      title: 'Product Name',
+      title: 'Name',
       sortable: true,
+      clickBehavior: 'detail', // Override global behavior for this column
       render: (value) => <strong>{value as string}</strong>
     },
     {
       id: 'sku',
       title: 'SKU',
-      sortable: true
+      sortable: true,
+      clickBehavior: 'select' // Click to select row
     },
     {
       id: 'category',
       title: 'Category',
-      sortable: true
+      sortable: true,
+      clickBehavior: 'none' // No click action
     },
     {
       id: 'price',
@@ -59,9 +84,11 @@ export default function TableDemoPage() {
     },
     {
       id: 'stock',
-      title: 'Stock',
+      title: 'Amount',
       sortable: true,
       alignment: 'right',
+      editable: true,
+      editType: 'number',
       render: (value) => {
         const stock = value as number;
         return (
@@ -77,18 +104,15 @@ export default function TableDemoPage() {
       sortable: true,
       render: (value) => {
         const status = value as string;
-        const colors: Record<string, string> = {
-          active: 'green',
-          inactive: 'gray',
-          'out-of-stock': 'red'
+        const toneMap: Record<string, 'success' | 'subdued' | 'critical'> = {
+          active: 'success',
+          inactive: 'subdued',
+          'out-of-stock': 'critical'
         };
         return (
-          <span style={{
-            color: colors[status] || 'inherit',
-            textTransform: 'capitalize'
-          }}>
+          <Badge tone={toneMap[status] || 'subdued'}>
             {status.replace('-', ' ')}
-          </span>
+          </Badge>
         );
       }
     },
@@ -192,9 +216,132 @@ export default function TableDemoPage() {
   };
 
 
-  const handleRowClick = (id: string, row: Record<string, unknown>) => {
-    console.log('Row clicked:', { id, row });
-    alert(`Clicked on ${row.name} (${id})`);
+  // Row actions configuration - using action configs instead of handlers
+  const rowActions: RowActionsConfig = {
+    enabled: true,
+    actions: [
+      {
+        ...DEFAULT_ACTIONS.view,
+        url: (row) => `/products/${row.id}` // Dynamic URL generation
+      },
+      DEFAULT_ACTIONS.edit,
+      DEFAULT_ACTIONS.duplicate,
+      DEFAULT_ACTIONS.delete
+    ]
+  };
+
+  // Row badges configuration
+  const rowBadges: RowBadge[] = [
+    {
+      content: 'Low Stock',
+      tone: 'attention',
+      condition: (row) => (row.stock as number) < 10 && (row.stock as number) > 0
+    },
+    {
+      content: 'Out of Stock',
+      tone: 'critical',
+      condition: (row) => (row.stock as number) === 0
+    },
+    {
+      content: 'Premium',
+      tone: 'success',
+      condition: (row) => (row.price as number) > 100
+    }
+  ];
+
+  // Simplified bulk actions using built-in handlers
+  const bulkActions: BulkAction[] = [
+    {
+      id: 'activate',
+      label: 'Activate Selected',
+      onAction: () => {} // Handled by action manager
+    },
+    {
+      id: 'deactivate',
+      label: 'Deactivate Selected',
+      onAction: () => {} // Handled by action manager
+    },
+    {
+      id: 'delete',
+      label: 'Delete Selected',
+      destructive: true,
+      onAction: () => {} // Handled by action manager
+    }
+  ];
+
+  // Detail modal configuration
+  const detailModal: DetailModalOptions = {
+    enabled: true,
+    title: (row) => `Product Details: ${row.name}`,
+    size: 'medium',
+    content: (row) => (
+      <BlockStack gap="400">
+        <Card>
+          <BlockStack gap="300">
+            <Text as="h3" variant="headingMd">Product Information</Text>
+            <InlineStack gap="600">
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">SKU</Text>
+                <Text as="p" variant="bodyMd" fontWeight="medium">{row.sku as string}</Text>
+              </Box>
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">Category</Text>
+                <Text as="p" variant="bodyMd" fontWeight="medium">{row.category as string}</Text>
+              </Box>
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">Vendor</Text>
+                <Text as="p" variant="bodyMd" fontWeight="medium">{row.vendor as string}</Text>
+              </Box>
+            </InlineStack>
+          </BlockStack>
+        </Card>
+
+        <Card>
+          <BlockStack gap="300">
+            <Text as="h3" variant="headingMd">Inventory & Pricing</Text>
+            <InlineStack gap="600">
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">Price</Text>
+                <Text as="p" variant="headingMd" fontWeight="bold">
+                  ${(row.price as number).toFixed(2)}
+                </Text>
+              </Box>
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">Stock Level</Text>
+                <Text as="p" variant="bodyMd" fontWeight="medium">
+                  {row.stock as number} units
+                </Text>
+              </Box>
+              <Box>
+                <Text as="p" variant="bodySm" tone="subdued">Status</Text>
+                <Badge tone={(row.status === 'active') ? 'success' :
+                  (row.status === 'inactive') ? 'subdued' : 'critical'}>
+                  {(row.status as string).replace('-', ' ')}
+                </Badge>
+              </Box>
+            </InlineStack>
+          </BlockStack>
+        </Card>
+
+        <Card>
+          <BlockStack gap="300">
+            <Text as="h3" variant="headingMd">Metadata</Text>
+            <Box>
+              <Text as="p" variant="bodySm" tone="subdued">Date Added</Text>
+              <Text as="p" variant="bodyMd" fontWeight="medium">
+                {new Date(row.dateAdded as string).toLocaleDateString()}
+              </Text>
+            </Box>
+          </BlockStack>
+        </Card>
+      </BlockStack>
+    ),
+    primaryAction: (row) => ({
+      content: 'Edit Product',
+      onAction: () => {
+        alert(`Edit ${row.name}`);
+      }
+    })
   };
 
   return (
@@ -206,24 +353,68 @@ export default function TableDemoPage() {
         <Card>
           <BlockStack gap="400">
             <div>
-              <h3>Features Demonstrated:</h3>
+              <h3>Refined DataFrameTable Features:</h3>
               <ul>
                 <li><strong>🔍 Real-time Search:</strong> Search across all fields with debounced input</li>
-                <li><strong>🎛️ Quick Filters:</strong> Dropdown filters for category, status, and vendor with auto-generated options</li>
-                <li><strong>📄 Pagination:</strong> Navigate through 47 items with configurable page sizes (10, 25, 50, 100)</li>
+                <li><strong>🎛️ Quick Filters:</strong> Dropdown filters for category, status, and vendor</li>
+                <li><strong>📄 Pagination:</strong> Navigate with configurable page sizes (10, 25, 50, 100)</li>
                 <li><strong>👁️ Column Visibility:</strong> Hide/show columns using the "Columns" button</li>
                 <li><strong>📊 Real Export:</strong> Download actual CSV and JSON files</li>
-                <li><strong>🔄 Built-in Sorting:</strong> Click column headers to sort (no external state needed)</li>
-                <li><strong>🎨 Custom Rendering:</strong> Status colors, price formatting, and stock indicators</li>
-                <li><strong>🖱️ Row Interaction:</strong> Click any row to see details</li>
-                <li><strong>⚡ Performance:</strong> Optimized search, sort, and filter processing</li>
+                <li><strong>🔄 Built-in Sorting:</strong> Click column headers to sort</li>
+                <li><strong>✏️ Inline Editing:</strong> Click on stock values to edit directly (editable cells have dashed border)</li>
+                <li><strong>🖱️ Smart Cell Clicks:</strong> Different click behaviors per column:
+                  <ul>
+                    <li>Product Name: Opens detail modal</li>
+                    <li>SKU: Selects/deselects row</li>
+                    <li>Category: No action</li>
+                    <li>Stock: Editable (overrides other behaviors)</li>
+                  </ul>
+                </li>
+                <li><strong>⋮ Floating Row Actions:</strong> Three-dots menu with View, Edit, Duplicate, Delete</li>
+                <li><strong>🔗 Detail Modal:</strong> Click product names for detailed information</li>
+                <li><strong>🏷️ Smart Badges:</strong> Visual indicators for low stock, out of stock, premium items</li>
+                <li><strong>☑️ Intelligent Bulk Actions:</strong> Built-in handlers for common operations</li>
+                <li><strong>⚙️ Action Manager:</strong> Abstracted action handling - no custom handlers needed</li>
               </ul>
+
+              <BlockStack gap="300">
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Try different interactions:
+                </Text>
+                <InlineStack gap="200">
+                  <Button
+                    size="small"
+                    variant={cellClickBehavior === 'detail' ? 'primary' : 'secondary'}
+                    onClick={() => setCellClickBehavior('detail')}
+                  >
+                    Detail Mode
+                  </Button>
+                  <Button
+                    size="small"
+                    variant={cellClickBehavior === 'select' ? 'primary' : 'secondary'}
+                    onClick={() => setCellClickBehavior('select')}
+                  >
+                    Select Mode
+                  </Button>
+                  <Button
+                    size="small"
+                    variant={cellClickBehavior === 'none' ? 'primary' : 'secondary'}
+                    onClick={() => setCellClickBehavior('none')}
+                  >
+                    No Action
+                  </Button>
+                </InlineStack>
+                <Text as="p" variant="bodySm" tone="subdued">
+                  Current mode: <strong>{cellClickBehavior}</strong> •
+                  Individual columns can override this behavior
+                </Text>
+              </BlockStack>
             </div>
           </BlockStack>
         </Card>
 
         <DataFrameTable
-          data={DEMO_DATA}
+          data={data}
           columns={columns}
           idField="id"
           search={search}
@@ -231,7 +422,15 @@ export default function TableDemoPage() {
           pagination={pagination}
           columnVisibility={columnVisibility}
           exportOptions={exportOptions}
-          onRowClick={handleRowClick}
+          selectable={true}
+          selectedIds={selectedIds}
+          onSelectionChange={setSelectedIds}
+          cellClickBehavior={cellClickBehavior}
+          bulkActions={bulkActions}
+          rowActions={rowActions}
+          rowBadges={rowBadges}
+          detailModal={detailModal}
+          actionManager={actionManager}
           emptyState={{
             title: 'No products found',
             description: 'Try adjusting your search or filter criteria'

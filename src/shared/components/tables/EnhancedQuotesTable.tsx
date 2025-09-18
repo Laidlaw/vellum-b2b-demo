@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Badge, InlineStack, Text, BlockStack } from '@shopify/polaris';
+import { Badge, Text, BlockStack, Box, Card, InlineStack } from '@shopify/polaris';
 import {
   DataFrameTable,
   type TableColumn,
@@ -9,7 +9,8 @@ import {
   type ActiveQuickFilter,
   type PaginationOptions,
   type ExportOptions,
-  type BulkAction
+  type BulkAction,
+  type DetailModalOptions
 } from './DataFrameTable';
 import type { Quote, PaginatedResponse } from '../../types';
 import { formatCurrency, formatDate, exportData } from '../../utils';
@@ -227,9 +228,92 @@ export function EnhancedQuotesTable({ companyId }: EnhancedQuotesTableProps) {
     ];
   }, [selectedQuoteIds.length, quotes, refetch]);
 
-  const handleRowClick = (id: string, quote: Record<string, unknown>) => {
-    console.log('Quote clicked:', { id, quote });
-    // TODO: Open quote details modal or navigate to quote page
+  // Detail modal configuration
+  const detailModal: DetailModalOptions = {
+    enabled: true,
+    title: (row) => `Quote Details: ${row.name}`,
+    size: 'large',
+    content: (row) => {
+      const quote = row as Quote;
+      return (
+        <BlockStack gap="400">
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h3" variant="headingMd">Quote Information</Text>
+              <InlineStack gap="600">
+                <Box>
+                  <Text as="p" variant="bodySm" tone="subdued">Quote Name</Text>
+                  <Text as="p" variant="bodyMd" fontWeight="medium">{quote.name}</Text>
+                </Box>
+                <Box>
+                  <Text as="p" variant="bodySm" tone="subdued">Status</Text>
+                  <QuoteStatusBadge status={quote.status} />
+                </Box>
+                <Box>
+                  <Text as="p" variant="bodySm" tone="subdued">PO Number</Text>
+                  <Text as="p" variant="bodyMd" fontWeight="medium">
+                    {quote.purchaseOrderNumber || '—'}
+                  </Text>
+                </Box>
+              </InlineStack>
+            </BlockStack>
+          </Card>
+
+          <Card>
+            <BlockStack gap="300">
+              <Text as="h3" variant="headingMd">Financial Details</Text>
+              <InlineStack gap="600">
+                <Box>
+                  <Text as="p" variant="bodySm" tone="subdued">Total Amount</Text>
+                  <Text as="p" variant="headingMd" fontWeight="bold">
+                    {formatCurrency(quote.amount)}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text as="p" variant="bodySm" tone="subdued">Created Date</Text>
+                  <Text as="p" variant="bodyMd" fontWeight="medium">
+                    {formatDate(quote.dateCreated)}
+                  </Text>
+                </Box>
+                <Box>
+                  <Text as="p" variant="bodySm" tone="subdued">Expiration</Text>
+                  <Text as="p" variant="bodyMd" fontWeight="medium">
+                    {quote.timeUntilExpiration}
+                  </Text>
+                </Box>
+              </InlineStack>
+            </BlockStack>
+          </Card>
+
+          {quote.approxDeliveryDate && (
+            <Card>
+              <BlockStack gap="300">
+                <Text as="h3" variant="headingMd">Delivery Information</Text>
+                <Box>
+                  <Text as="p" variant="bodySm" tone="subdued">Expected Delivery</Text>
+                  <Text as="p" variant="bodyMd" fontWeight="medium">
+                    {formatDate(quote.approxDeliveryDate)}
+                  </Text>
+                </Box>
+              </BlockStack>
+            </Card>
+          )}
+        </BlockStack>
+      );
+    },
+    primaryAction: (row) => {
+      const quote = row as Quote;
+      if (quote.status === 'pending') {
+        return {
+          content: 'Approve Quote',
+          onAction: async () => {
+            await fetch(`/api/quotes/${quote.id}/approve`, { method: 'POST' });
+            refetch();
+          }
+        };
+      }
+      return null;
+    }
   };
 
   return (
@@ -245,7 +329,8 @@ export function EnhancedQuotesTable({ companyId }: EnhancedQuotesTableProps) {
       selectedIds={selectedQuoteIds}
       onSelectionChange={setSelectedQuoteIds}
       bulkActions={bulkActions}
-      onRowClick={handleRowClick}
+      detailModal={detailModal}
+      cellClickBehavior="detail"
       loading={isLoading}
       emptyState={{
         title: 'No quotes found',

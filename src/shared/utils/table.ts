@@ -292,3 +292,173 @@ export function combineFilters<T extends Record<string, unknown>>(
 
   return result;
 }
+
+// Enhanced table utilities for new features
+export interface EditValidationOptions {
+  required?: boolean;
+  minLength?: number;
+  maxLength?: number;
+  pattern?: RegExp;
+  min?: number;
+  max?: number;
+  customValidator?: (value: unknown) => string | null;
+}
+
+export function validateCellEdit(
+  value: unknown,
+  editType: 'text' | 'number' | 'select' | 'date',
+  options: EditValidationOptions = {}
+): string | null {
+  const { required, minLength, maxLength, pattern, min, max, customValidator } = options;
+
+  if (required && (value === null || value === undefined || String(value).trim() === '')) {
+    return 'This field is required';
+  }
+
+  if (customValidator) {
+    return customValidator(value);
+  }
+
+  const stringValue = String(value || '');
+
+  switch (editType) {
+    case 'text':
+      if (minLength && stringValue.length < minLength) {
+        return `Minimum length is ${minLength} characters`;
+      }
+      if (maxLength && stringValue.length > maxLength) {
+        return `Maximum length is ${maxLength} characters`;
+      }
+      if (pattern && !pattern.test(stringValue)) {
+        return 'Invalid format';
+      }
+      break;
+
+    case 'number':
+      const numValue = Number(value);
+      if (isNaN(numValue)) {
+        return 'Must be a valid number';
+      }
+      if (min !== undefined && numValue < min) {
+        return `Must be at least ${min}`;
+      }
+      if (max !== undefined && numValue > max) {
+        return `Must be no more than ${max}`;
+      }
+      break;
+
+    case 'date':
+      const dateValue = new Date(stringValue);
+      if (isNaN(dateValue.getTime())) {
+        return 'Must be a valid date';
+      }
+      break;
+  }
+
+  return null;
+}
+
+export function reorderArray<T>(
+  array: T[],
+  fromIndex: number,
+  toIndex: number
+): T[] {
+  const result = [...array];
+  const [movedItem] = result.splice(fromIndex, 1);
+  result.splice(toIndex, 0, movedItem);
+  return result;
+}
+
+export interface RowActionExecutionContext<T = Record<string, unknown>> {
+  rowId: string;
+  row: T;
+  allRows: T[];
+  selectedIds: string[];
+}
+
+export function executeRowAction<T extends Record<string, unknown>>(
+  context: RowActionExecutionContext<T>,
+  actionHandler: (context: RowActionExecutionContext<T>) => Promise<void> | void
+): Promise<void> | void {
+  return actionHandler(context);
+}
+
+export interface StagedActionSummary {
+  totalActions: number;
+  actionsByType: Record<string, number>;
+  affectedRowCount: number;
+  hasDestructiveActions: boolean;
+}
+
+export function summarizeStagedActions(stagedActions: Array<{
+  type: 'bulk' | 'row';
+  actionId: string;
+  targetIds: string[];
+  destructive?: boolean;
+}>): StagedActionSummary {
+  const actionsByType: Record<string, number> = {};
+  const allAffectedIds = new Set<string>();
+  let hasDestructiveActions = false;
+
+  stagedActions.forEach(action => {
+    actionsByType[action.actionId] = (actionsByType[action.actionId] || 0) + 1;
+    action.targetIds.forEach(id => allAffectedIds.add(id));
+    if (action.destructive) {
+      hasDestructiveActions = true;
+    }
+  });
+
+  return {
+    totalActions: stagedActions.length,
+    actionsByType,
+    affectedRowCount: allAffectedIds.size,
+    hasDestructiveActions
+  };
+}
+
+export function executeStagedActions<T extends Record<string, unknown>>(
+  stagedActions: Array<{
+    type: 'bulk' | 'row';
+    actionId: string;
+    targetIds: string[];
+    handler: (targetIds: string[], allRows: T[]) => Promise<void> | void;
+  }>,
+  allRows: T[]
+): Promise<void[]> | void[] {
+  const promises = stagedActions.map(action =>
+    action.handler(action.targetIds, allRows)
+  );
+
+  const hasAsyncActions = promises.some(p => p instanceof Promise);
+
+  if (hasAsyncActions) {
+    return Promise.all(promises);
+  }
+
+  return promises as void[];
+}
+
+export interface TableStateManager<T extends Record<string, unknown>> {
+  selectedIds: string[];
+  setSelectedIds: (ids: string[]) => void;
+  editingCell: { rowId: string; columnId: string; value: unknown } | null;
+  setEditingCell: (cell: { rowId: string; columnId: string; value: unknown } | null) => void;
+  detailModalRow: T | null;
+  setDetailModalRow: (row: T | null) => void;
+  stagedActions: Array<{
+    id: string;
+    type: 'bulk' | 'row';
+    actionId: string;
+    targetIds: string[];
+    label: string;
+    destructive?: boolean;
+  }>;
+  setStagedActions: (actions: Array<{
+    id: string;
+    type: 'bulk' | 'row';
+    actionId: string;
+    targetIds: string[];
+    label: string;
+    destructive?: boolean;
+  }>) => void;
+}

@@ -8,15 +8,33 @@ export { TableFilters } from './DataFrameTable/TableFilters';
 export { TableMetrics } from './DataFrameTable/TableMetrics';
 export { TableHeader } from './DataFrameTable/TableHeader';
 export { TablePagination } from './DataFrameTable/TablePagination';
+export { EditableCell } from './DataFrameTable/EditableCell';
+export { CellWrapper } from './DataFrameTable/CellWrapper';
+export { RowActions } from './DataFrameTable/RowActions';
+export { DetailModal } from './DataFrameTable/DetailModal';
+export { StagedActions } from './DataFrameTable/StagedActions';
+export { useTableActionManager, executeAction, DEFAULT_ACTIONS } from './DataFrameTable/TableActionManager';
 export type {
   TableColumn,
   TableFilter,
   TableMetric,
   DataFrameTableProps,
   BulkAction,
+  RowAction,
+  RowBadge,
+  RowActionsConfig,
   PaginationOptions,
   ColumnVisibilityOptions,
   ExportOptions,
   SavedSearch,
-  SavedSearchOptions
+  SavedSearchOptions,
+  DetailModalOptions,
+  RowReorderingOptions,
+  StagedAction,
+  EditingCell,
+  TableState,
+  CellClickBehavior,
+  ActionConfig,
+  TableActionManager,
+  CellWrapperProps
 } from './DataFrameTable/types';
